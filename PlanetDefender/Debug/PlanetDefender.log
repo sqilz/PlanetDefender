@@ -1,20 +1,16 @@
-﻿Build started 01/02/2016 12:26:23.
-     1>Project "D:\DirectX11\PlanetDefender\PlanetDefender\PlanetDefender.vcxproj" on node 2 (Build target(s)).
+﻿Build started 09/03/2016 00:09:59.
+     1>Project "D:\PlanetDefender\PlanetDefender\PlanetDefender.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         D:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ID:\DirectX11\PlanetDefender\packages\directxtk_desktop_2013.2015.11.30.1\build\native\../../build/native/include/ /ID:\DirectX11\PlanetDefender\packages\fx11_desktop_2013.2015.11.30.1\build\native\../../build/native/include/ /ZI /nologo /W3 /WX- /Od /Oy- /D HAS_DIRECTXTK /D HAS_FX11 /D WIN32 /D _DEBUG /D _WINDOWS /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /arch:SSE2 /fp:fast /Zc:wchar_t /Zc:forScope /Yu"pch.h" /Fp"Debug\PlanetDefender.pch" /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt Game.cpp Main.cpp
+         D:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ID:\PlanetDefender\packages\directxtk_desktop_2013.2015.11.30.1\build\native\../../build/native/include/ /ID:\PlanetDefender\packages\fx11_desktop_2013.2015.11.30.1\build\native\../../build/native/include/ /ZI /nologo /W3 /WX- /Od /Oy- /D HAS_DIRECTXTK /D HAS_FX11 /D WIN32 /D _DEBUG /D _WINDOWS /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /arch:SSE2 /fp:fast /Zc:wchar_t /Zc:forScope /GR /Yu"pch.h" /Fp"Debug\PlanetDefender.pch" /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt Game.cpp
          Game.cpp
-         Generating Code...
-         Compiling...
-         Main.cpp
-         Generating Code...
        Link:
-         D:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\DirectX11\PlanetDefender\Debug\PlanetDefender.exe" /INCREMENTAL /NOLOGO D:\DirectX11\PlanetDefender\packages\directxtk_desktop_2013.2015.11.30.1\build\native\../../build/native/lib/Win32/Debug/DirectXTKAudioDX.lib D:\DirectX11\PlanetDefender\packages\directxtk_desktop_2013.2015.11.30.1\build\native\../../build/native/lib/Win32/Debug/DirectXTK.lib D:\DirectX11\PlanetDefender\packages\fx11_desktop_2013.2015.11.30.1\build\native\../../build/native/lib/Win32/Debug/Effects11.lib d3d11.lib dxguid.lib uuid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib d3d11.lib d3dx11d.lib D3DCompiler.lib Effects11d.lib dxerr.lib dxgi.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /manifestinput:settings.manifest /DEBUG /PDB:"D:\DirectX11\PlanetDefender\Debug\PlanetDefender.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\DirectX11\PlanetDefender\Debug\PlanetDefender.lib" /MACHINE:X86 Debug\resource.res
+         D:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\PlanetDefender\Debug\PlanetDefender.exe" /INCREMENTAL /NOLOGO D:\PlanetDefender\packages\directxtk_desktop_2013.2015.11.30.1\build\native\../../build/native/lib/Win32/Debug/DirectXTKAudioDX.lib D:\PlanetDefender\packages\directxtk_desktop_2013.2015.11.30.1\build\native\../../build/native/lib/Win32/Debug/DirectXTK.lib D:\PlanetDefender\packages\fx11_desktop_2013.2015.11.30.1\build\native\../../build/native/lib/Win32/Debug/Effects11.lib d3d11.lib dxguid.lib uuid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /manifestinput:settings.manifest /DEBUG /PDB:"D:\PlanetDefender\Debug\PlanetDefender.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\PlanetDefender\Debug\PlanetDefender.lib" /MACHINE:X86 Debug\resource.res
          Debug\Game.obj
          Debug\Main.obj
          Debug\pch.obj
-         PlanetDefender.vcxproj -> D:\DirectX11\PlanetDefender\Debug\PlanetDefender.exe
-     1>Done Building Project "D:\DirectX11\PlanetDefender\PlanetDefender\PlanetDefender.vcxproj" (Build target(s)).
+         PlanetDefender.vcxproj -> D:\PlanetDefender\Debug\PlanetDefender.exe
+     1>Done Building Project "D:\PlanetDefender\PlanetDefender\PlanetDefender.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:06.35
+Time Elapsed 00:00:01.03

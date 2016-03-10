@@ -13,7 +13,7 @@ Game::Game() :
     m_window(0),
     m_outputWidth(800),
     m_outputHeight(600),
-    m_featureLevel(D3D_FEATURE_LEVEL_9_1)
+    m_featureLevel(D3D_FEATURE_LEVEL_10_0)
 {
 }
 
@@ -37,6 +37,9 @@ void Game::Initialize(HWND window, int width, int height)
 
 
     */
+	m_keyboard = std::make_unique<Keyboard>();
+	m_world._41 = -20.f;
+	m_world._43 = -20.f;
 }
 
 // Executes the basic game loop.
@@ -56,10 +59,50 @@ void Game::Update(DX::StepTimer const& timer)
     float elapsedTime = float(timer.GetElapsedSeconds());
 
     // TODO: Add your game logic here.
-    elapsedTime;
+	elapsedTime;
 	float time = float(timer.GetTotalSeconds());
+	
+	float newTime = time - elapsedTime;
+	/* KEYBOARD BUTTONS */
+	auto kb = m_keyboard->GetState();
+	
+	if (kb.Escape)
+	{
+		PostQuitMessage(0);
+	}
+	if (kb.A)
+	{
+		m_world3 *= Matrix::CreateTranslation(Vector3(-0.2f, 0.0f, 0.0f));
+	}
+	if (kb.D)
+	{		
+		m_world3 *= Matrix::CreateTranslation(Vector3(0.2f, 0.0f, 0.0f));
+	}
+	if (kb.W)
+	{
+		//makes geometry transform around its origin, if matrix*Create rotation, it rotates around a point 
+		//m_world3 =operator*(Matrix::CreateRotationY(0.1f), m_world3);
+		m_world3 *= Matrix::CreateTranslation(Vector3(0.f, .0f, -0.2f));
+	}
+	if (kb.S)
+	{
+		m_world3 *= Matrix::CreateTranslation(Vector3(0.0f, .0f, 0.2f));
+		//m_world3 = operator*(Matrix::CreateRotationY(-0.1f), m_world3);
 
-	m_world = Matrix::CreateRotationZ(cosf(time) * 2.f);
+	}
+
+
+	m_planetWorld *= Matrix::CreateRotationY(.001f);
+	
+	m_world *= Matrix::CreateRotationY(sinf(2.f*XM_PI/360.f)) * Matrix::CreateTranslation(Vector3(.1f, .0f, .1f));
+	
+	m_plan2 *= Matrix::CreateTranslation(Vector3(0.f, .01f, .0f));
+
+	a = m_world._41;
+	b = m_world._43;
+
+	m_view = Matrix::CreateLookAt(Vector3(m_world3._41 + 0.f, m_world3._42 + 50.f, m_world3._43 + 50.f), Vector3(m_world3._41, m_world3._42, m_world3._43), Vector3::Up);
+
 }
 
 // Draws the scene.
@@ -72,12 +115,37 @@ void Game::Render()
     }
 
     Clear();
-
+	
     // TODO: Add your rendering code here.
-	float time = float(m_timer.GetTotalSeconds());
+	//float time = float(m_timer.GetTotalSeconds());
+	m_effect->SetWorld(m_plan2);
 
-	m_shape->Draw(m_world, m_view, m_proj);
-    Present();
+	
+
+	m_shape->Draw(m_world,m_view,m_proj,Colors::White,m_texture.Get());
+	m_cube->Draw(m_effect.get(), m_inputLayout.Get(), false, false, [=]{
+		auto sampler = m_states->LinearWrap();
+		m_d3dContext->PSSetSamplers(1, 1, &sampler);
+	});
+	m_planet->Draw(m_planetWorld, m_view, m_proj,Colors::White,m_texture2.Get());
+	m_boat->Draw(m_d3dContext.Get(), *m_states, m_world3, m_view, m_proj);
+
+	// Draws text
+	
+	
+	std::wstring output = std::wstring(L" X: ")+ std::to_wstring(a) +std::wstring(L"\n Z: ") + std::to_wstring(b);
+
+	m_spriteBatch->Begin();
+
+	Vector2 origin = m_font->MeasureString(output.c_str()) / 2.f;
+
+	m_font->DrawString(m_spriteBatch.get(), output.c_str(),	m_FontPos, Colors::White, 0.f, origin);
+
+	m_spriteBatch->End();
+	/*********/
+
+
+	Present();
 }
 
 // Helper method to clear the back buffers.
@@ -144,14 +212,15 @@ void Game::OnWindowSizeChanged(int width, int height)
     CreateResources();
 
     // TODO: Game window is being resized.
+
 }
 
 // Properties
 void Game::GetDefaultSize(int& width, int& height) const
 {
     // TODO: Change to desired default window size (note minimum size is 320x200).
-    width = 800;
-    height = 600;
+    width = 1270;
+    height = 860;
 }
 
 // These are the resources that depend on the device.
@@ -236,25 +305,46 @@ void Game::CreateDevice()
     if (SUCCEEDED(m_d3dDevice.As(&m_d3dDevice1)))
         (void)m_d3dContext.As(&m_d3dContext1);
 
-    // TODO: Initialize device dependent objects here (independent of window size).
+    // TODO: Initialize device dependent objects here (independent of window 
+	m_states = std::make_unique<CommonStates>(m_d3dDevice.Get());
+	m_fxFactory = std::make_unique<EffectFactory>(m_d3dDevice.Get());
+	
+	m_effect = std::make_unique<EnvironmentMapEffect>(m_d3dDevice.Get());
+
+	// ship model
+	m_boat = Model::CreateFromCMO(m_d3dDevice.Get(), L"old_boat.cmo", *m_fxFactory);
+	//center planet
+	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"earth.bmp", nullptr, m_texture2.ReleaseAndGetAddressOf()));
+	m_planet = GeometricPrimitive::CreateSphere(m_d3dContext.Get());
+	//orbiting planet
+	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"earth.bmp", nullptr, m_texture.ReleaseAndGetAddressOf()));
+	m_shape = GeometricPrimitive::CreateSphere(m_d3dContext.Get());
+	// cubemap?? TODO
+	m_cube = GeometricPrimitive::CreateCube(m_d3dContext.Get());
+	m_cube->CreateInputLayout(m_effect.get(), m_inputLayout.ReleaseAndGetAddressOf());
+	DX::ThrowIfFailed(CreateDDSTextureFromFile(m_d3dDevice.Get(), L"cubemap.dds", nullptr, m_cubemap.ReleaseAndGetAddressOf()));
+	
+
+	m_effect->SetEnvironmentMap(m_cubemap.Get());
+
+	m_world = Matrix::Identity;
+	m_planetWorld = Matrix::Identity;
+	m_plan2 = Matrix::Identity;
+	m_world3 = Matrix::Identity;
+
+	
+	m_world3 = Matrix::CreateScale(Vector3(1.f, 1.f, 1.f));
+	m_planetWorld = Matrix::CreateScale(Vector3(9.f, 9.f, 9.f));
+	m_world = Matrix::CreateScale(Vector3(4.f, 4.f, 4.f));
+	m_plan2 = Matrix::CreateScale(Vector3(5.f, 5.f, 5.f));
+
+
+	m_font = std::make_unique<SpriteFont>(m_d3dDevice.Get(), L"c.spritefont");
 	m_spriteBatch = std::make_unique<SpriteBatch>(m_d3dContext.Get());
 
-	ComPtr<ID3D11Resource> resource;
-	DX::ThrowIfFailed(
-		CreateWICTextureFromFile(m_d3dDevice.Get(), L"hec.png",
-		resource.GetAddressOf(),
-		m_texture.ReleaseAndGetAddressOf()));
 
-	ComPtr<ID3D11Texture2D> cat;
-	DX::ThrowIfFailed(resource.As(&cat));
+	
 
-	CD3D11_TEXTURE2D_DESC catDesc;
-	cat->GetDesc(&catDesc);
-
-	m_origin.x = float(catDesc.Width / 1.f);
-	m_origin.y = float(catDesc.Height / 1.f);
-	m_shape = GeometricPrimitive::CreateSphere(m_d3dContext.Get());
-	m_world = Matrix::Identity;
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.
@@ -374,11 +464,16 @@ void Game::CreateResources()
     DX::ThrowIfFailed(m_d3dDevice->CreateDepthStencilView(depthStencil.Get(), &depthStencilViewDesc, m_depthStencilView.ReleaseAndGetAddressOf()));
 
     // TODO: Initialize windows-size dependent objects here.
-	m_screenPos.x = backBufferWidth / 2.f;
-	m_screenPos.y = backBufferHeight / 2.f;
-	m_states = std::make_unique<CommonStates>(m_d3dDevice.Get());
-	m_view = Matrix::CreateLookAt(Vector3(2.f, 2.f, 2.f), Vector3::Zero, Vector3::UnitY);
-	m_proj = Matrix::CreatePerspectiveFieldOfView(XM_PI / 4.f, float(backBufferWidth)/float(backBufferHeight), 0.1f, 10.f);
+	
+	
+	m_proj = Matrix::CreatePerspectiveFieldOfView(XM_PI / 4.f, float(backBufferWidth) / float(backBufferHeight),0.1f,1000.f);
+	
+	m_effect->SetView(m_view);
+	m_effect->SetProjection(m_proj); 
+
+	//font position
+	m_FontPos.x = backBufferWidth / 5.f;
+	m_FontPos.y = backBufferHeight / 6.f;
 }
 
 void Game::OnDeviceLost()
@@ -393,12 +488,18 @@ void Game::OnDeviceLost()
     m_d3dContext.Reset();
     m_d3dDevice1.Reset();
     m_d3dDevice.Reset();
-	m_texture.Reset();
-	m_spriteBatch.reset();
+	m_fxFactory.reset();
+	m_boat.reset();
 	m_states.reset();
-
 	m_shape.reset();
-
+	m_planet.reset();
+	m_font.reset();
+	m_effect.reset();
+	m_inputLayout.Reset();
+	m_texture.Reset();
+	m_texture2.Reset();
+	m_cubemap.Reset();
+	m_spriteBatch.reset();
 
 	CreateDevice();
 

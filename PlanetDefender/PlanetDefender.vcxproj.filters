@@ -24,6 +24,12 @@
     <ClInclude Include="StepTimer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AnimatedTexture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ScrollingBackground.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -45,12 +51,14 @@
     <Image Include="directx.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="cat.png">
+    <Image Include="starfield.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="hec.png">
+    <Image Include="earth.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="cubemap.dds" />
+    <Image Include="wood.DDS" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="settings.manifest">
@@ -59,5 +67,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="cup.cmo" />
+    <None Include="old_boat.cmo">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="c.spritefont">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
