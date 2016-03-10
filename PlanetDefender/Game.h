@@ -93,6 +93,7 @@ private:
 	std::unique_ptr<DirectX::IEffectFactory> m_fxFactory;
 	std::unique_ptr<DirectX::EnvironmentMapEffect> m_effect;
 
+	
 	float a,b;
 
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;

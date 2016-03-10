@@ -318,7 +318,7 @@ void Game::CreateDevice()
 	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"spaceTexture.jpg", nullptr, m_cMapTexture.ReleaseAndGetAddressOf()));
 	m_cubeMap = GeometricPrimitive::CreateSphere(m_d3dContext.Get(),100.f,16,false,true);
 	
-	
+	//m_cubeMap = GeometricPrimitive::CreateBox(m_d3dContext.Get(), XMFLOAT3(50, 50, 50), false, true);
 	
 	
 
@@ -462,8 +462,8 @@ void Game::CreateResources()
 
     // TODO: Initialize windows-size dependent objects here.
 	
-	
-	m_proj = Matrix::CreatePerspectiveFieldOfView(XM_PI / 4.f, float(backBufferWidth) / float(backBufferHeight),0.1f,1000.f);
+	// FOV
+	m_proj = Matrix::CreatePerspectiveFieldOfView(XM_PI / 2.5f, float(backBufferWidth) / float(backBufferHeight),0.1f,1000.f);
 
 
 	//font position
