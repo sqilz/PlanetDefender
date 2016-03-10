@@ -86,7 +86,7 @@ private:
 	std::unique_ptr<DirectX::CommonStates> m_states;
 	
 	std::unique_ptr<DirectX::GeometricPrimitive> m_shape;
-	std::unique_ptr<DirectX::GeometricPrimitive> m_cube;
+	std::unique_ptr<DirectX::GeometricPrimitive> m_cubeMap;
 	std::unique_ptr<DirectX::GeometricPrimitive> m_planet;
 	std::unique_ptr<DirectX::Model> m_boat;
 
@@ -99,6 +99,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture2;
 
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_cubemap;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_cMapTexture;
+
 
 };

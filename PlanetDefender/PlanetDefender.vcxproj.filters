@@ -57,8 +57,15 @@
     <Image Include="earth.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="cubemap.dds" />
-    <Image Include="wood.DDS" />
+    <Image Include="spaceTexture.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="cubemap.dds">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="wood.DDS">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="settings.manifest">
@@ -67,11 +74,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="cup.cmo" />
     <None Include="old_boat.cmo">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="c.spritefont">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="cup.cmo">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

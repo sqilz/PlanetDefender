@@ -96,7 +96,7 @@ void Game::Update(DX::StepTimer const& timer)
 	
 	m_world *= Matrix::CreateRotationY(sinf(2.f*XM_PI/360.f)) * Matrix::CreateTranslation(Vector3(.1f, .0f, .1f));
 	
-	m_plan2 *= Matrix::CreateTranslation(Vector3(0.f, .01f, .0f));
+	m_plan2 *= Matrix::CreateRotationY(.0001f);
 
 	a = m_world._41;
 	b = m_world._43;
@@ -118,15 +118,13 @@ void Game::Render()
 	
     // TODO: Add your rendering code here.
 	//float time = float(m_timer.GetTotalSeconds());
-	m_effect->SetWorld(m_plan2);
+
 
 	
 
 	m_shape->Draw(m_world,m_view,m_proj,Colors::White,m_texture.Get());
-	m_cube->Draw(m_effect.get(), m_inputLayout.Get(), false, false, [=]{
-		auto sampler = m_states->LinearWrap();
-		m_d3dContext->PSSetSamplers(1, 1, &sampler);
-	});
+	m_cubeMap->Draw(m_plan2, m_view, m_proj, Colors::Azure, m_cMapTexture.Get());
+	
 	m_planet->Draw(m_planetWorld, m_view, m_proj,Colors::White,m_texture2.Get());
 	m_boat->Draw(m_d3dContext.Get(), *m_states, m_world3, m_view, m_proj);
 
@@ -239,9 +237,6 @@ void Game::CreateDevice()
         D3D_FEATURE_LEVEL_11_0,
         D3D_FEATURE_LEVEL_10_1,
         D3D_FEATURE_LEVEL_10_0,
-        D3D_FEATURE_LEVEL_9_3,
-        D3D_FEATURE_LEVEL_9_2,
-        D3D_FEATURE_LEVEL_9_1,
     };
 
     // Create the DX11 API device object, and get a corresponding context.
@@ -309,7 +304,7 @@ void Game::CreateDevice()
 	m_states = std::make_unique<CommonStates>(m_d3dDevice.Get());
 	m_fxFactory = std::make_unique<EffectFactory>(m_d3dDevice.Get());
 	
-	m_effect = std::make_unique<EnvironmentMapEffect>(m_d3dDevice.Get());
+
 
 	// ship model
 	m_boat = Model::CreateFromCMO(m_d3dDevice.Get(), L"old_boat.cmo", *m_fxFactory);
@@ -320,16 +315,18 @@ void Game::CreateDevice()
 	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"earth.bmp", nullptr, m_texture.ReleaseAndGetAddressOf()));
 	m_shape = GeometricPrimitive::CreateSphere(m_d3dContext.Get());
 	// cubemap?? TODO
-	m_cube = GeometricPrimitive::CreateCube(m_d3dContext.Get());
-	m_cube->CreateInputLayout(m_effect.get(), m_inputLayout.ReleaseAndGetAddressOf());
-	DX::ThrowIfFailed(CreateDDSTextureFromFile(m_d3dDevice.Get(), L"cubemap.dds", nullptr, m_cubemap.ReleaseAndGetAddressOf()));
+	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"spaceTexture.jpg", nullptr, m_cMapTexture.ReleaseAndGetAddressOf()));
+	m_cubeMap = GeometricPrimitive::CreateSphere(m_d3dContext.Get(),100.f,16,false,true);
+	
+	
+	
 	
 
-	m_effect->SetEnvironmentMap(m_cubemap.Get());
 
 	m_world = Matrix::Identity;
 	m_planetWorld = Matrix::Identity;
 	m_plan2 = Matrix::Identity;
+
 	m_world3 = Matrix::Identity;
 
 	
@@ -467,9 +464,7 @@ void Game::CreateResources()
 	
 	
 	m_proj = Matrix::CreatePerspectiveFieldOfView(XM_PI / 4.f, float(backBufferWidth) / float(backBufferHeight),0.1f,1000.f);
-	
-	m_effect->SetView(m_view);
-	m_effect->SetProjection(m_proj); 
+
 
 	//font position
 	m_FontPos.x = backBufferWidth / 5.f;
@@ -488,18 +483,21 @@ void Game::OnDeviceLost()
     m_d3dContext.Reset();
     m_d3dDevice1.Reset();
     m_d3dDevice.Reset();
+	
 	m_fxFactory.reset();
-	m_boat.reset();
 	m_states.reset();
+	m_inputLayout.Reset();
+
+	// textures
+	m_texture.Reset();
+	m_texture2.Reset();
+	m_cMapTexture.Reset();
+	// geometry & font
+	m_cubeMap.reset();
 	m_shape.reset();
 	m_planet.reset();
 	m_font.reset();
-	m_effect.reset();
-	m_inputLayout.Reset();
-	m_texture.Reset();
-	m_texture2.Reset();
-	m_cubemap.Reset();
-	m_spriteBatch.reset();
+	m_boat.reset();
 
 	CreateDevice();
 
