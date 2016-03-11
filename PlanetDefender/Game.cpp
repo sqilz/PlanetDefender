@@ -119,30 +119,20 @@ void Game::Render()
     Clear();
 	
     // TODO: Add your rendering code here.
-	//float time = float(m_timer.GetTotalSeconds());
-
-
 	
-
+	m_effect->SetWorld(m_plan2);
 	m_shape->Draw(m_world,m_view,m_proj,Colors::White,m_texture.Get());
-	m_cubeMap->Draw(m_plan2, m_view, m_proj, Colors::Azure, m_cMapTexture.Get());
-	
+	m_cubeMap->Draw(m_effect.get(), m_inputLayout.Get());
 	m_planet->Draw(m_planetWorld, m_view, m_proj,Colors::White,m_texture2.Get());
 	m_boat->Draw(m_d3dContext.Get(), *m_states, m_world3, m_view, m_proj);
 
 	// Draws text
-	
-	
 	std::wstring output = std::wstring(L" X: ")+ std::to_wstring(a) +std::wstring(L"\n Z: ") + std::to_wstring(b);
-
 	m_spriteBatch->Begin();
-
 	Vector2 origin = m_font->MeasureString(output.c_str()) / 2.f;
-
 	m_font->DrawString(m_spriteBatch.get(), output.c_str(),	m_FontPos, Colors::White, 0.f, origin);
-
 	m_spriteBatch->End();
-	/*********/
+
 
 
 	Present();
@@ -316,11 +306,30 @@ void Game::CreateDevice()
 	//orbiting planet
 	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"earth.bmp", nullptr, m_texture.ReleaseAndGetAddressOf()));
 	m_shape = GeometricPrimitive::CreateSphere(m_d3dContext.Get());
-	// cubemap?? TODO
-	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"spaceTexture.jpg", nullptr, m_cMapTexture.ReleaseAndGetAddressOf()));
-	m_cubeMap = GeometricPrimitive::CreateSphere(m_d3dContext.Get(),300.f,16,false,true);
 	
-	//m_cubeMap = GeometricPrimitive::CreateBox(m_d3dContext.Get(), XMFLOAT3(50, 50, 50), false, true);
+	
+
+	// cubemap?? TODO
+	//skybox ligthing fix
+	m_effect = std::make_unique<BasicEffect>(m_d3dDevice.Get());
+	m_effect->SetTextureEnabled(true);
+	m_effect->SetPerPixelLighting(true);
+	m_effect->SetLightingEnabled(true);
+	m_effect->SetLightEnabled(0, true);
+	m_effect->SetLightDiffuseColor(0, Colors::White);
+	m_effect->SetLightDirection(0, -Vector3::UnitZ);
+	m_effect->SetFogEnabled(true);
+	m_effect->SetFogStart(6);
+	m_effect->SetFogEnd(1200);
+	m_effect->SetFogColor(Colors::Black);
+
+	m_cubeMap = GeometricPrimitive::CreateSphere(m_d3dContext.Get(),300.f,16,false,true);
+	m_shape->CreateInputLayout(m_effect.get(),
+		m_inputLayout.ReleaseAndGetAddressOf());
+
+	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"spaceTexture.jpg", nullptr, m_cMapTexture.ReleaseAndGetAddressOf()));
+	m_effect->SetTexture(m_cMapTexture.Get());
+
 	
 	
 
@@ -467,7 +476,8 @@ void Game::CreateResources()
 	// FOV
 	m_proj = Matrix::CreatePerspectiveFieldOfView(XM_PI / 2.5f, float(backBufferWidth) / float(backBufferHeight),0.1f,1000.f);
 
-
+	m_effect->SetView(m_view);
+	m_effect->SetProjection(m_proj);
 	//font position
 	m_FontPos.x = backBufferWidth / 5.f;
 	m_FontPos.y = backBufferHeight / 6.f;

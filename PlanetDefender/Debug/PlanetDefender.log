@@ -1,4 +1,4 @@
-﻿Build started 11/03/2016 09:57:09.
+﻿Build started 11/03/2016 13:31:59.
      1>Project "\\Su1\uh\UP739235\g\PlanetDefender\PlanetDefender.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I\\Su1\uh\UP739235\g\packages\directxtk_desktop_2013.2015.11.30.1\build\native\../../build/native/include/ /I\\Su1\uh\UP739235\g\packages\fx11_desktop_2013.2015.11.30.1\build\native\../../build/native/include/ /ZI /nologo /W3 /WX- /Od /Oy- /D HAS_DIRECTXTK /D HAS_FX11 /D WIN32 /D _DEBUG /D _WINDOWS /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /arch:SSE2 /fp:fast /Zc:wchar_t /Zc:forScope /GR /Yu"pch.h" /Fp"Debug\PlanetDefender.pch" /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt Game.cpp
@@ -13,4 +13,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:05.26
+Time Elapsed 00:00:11.90

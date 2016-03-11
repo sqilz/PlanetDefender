@@ -81,7 +81,7 @@ private:
 	DirectX::SimpleMath::Vector2 m_FontPos;
 	std::unique_ptr<DirectX::SpriteFont> m_font;
 	std::unique_ptr<DirectX::SpriteBatch> m_spriteBatch;
-
+	
 	// Geometry stuff
 	std::unique_ptr<DirectX::CommonStates> m_states;
 	
@@ -91,16 +91,18 @@ private:
 	std::unique_ptr<DirectX::Model> m_boat;
 
 	std::unique_ptr<DirectX::IEffectFactory> m_fxFactory;
-	std::unique_ptr<DirectX::EnvironmentMapEffect> m_effect;
+	std::unique_ptr<DirectX::BasicEffect> m_effect;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
 
+	std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionColor>> m_batch;
 	
+
 	float a,b;
 
-	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
+	
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture2;
-
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_cMapTexture;
 
-
+	      
 };
