@@ -36,6 +36,9 @@ public:
     // Properties
     void GetDefaultSize( int& width, int& height ) const;
 
+	//Main Menu
+	void Menu();
+
 private:
 
     void Update(DX::StepTimer const& timer);
@@ -72,35 +75,42 @@ private:
 	
 	DirectX::SimpleMath::Matrix m_planetWorld;
 	DirectX::SimpleMath::Matrix m_world;
-	DirectX::SimpleMath::Matrix m_world3;
-	DirectX::SimpleMath::Matrix m_plan2;
+	DirectX::SimpleMath::Matrix m_ship;
+	DirectX::SimpleMath::Matrix m_skybox;
 	DirectX::SimpleMath::Matrix m_view;
 	DirectX::SimpleMath::Matrix m_proj;
-
+	
 	//font
 	DirectX::SimpleMath::Vector2 m_FontPos;
 	std::unique_ptr<DirectX::SpriteFont> m_font;
 	std::unique_ptr<DirectX::SpriteBatch> m_spriteBatch;
-
-	// Geometry stuff
-	std::unique_ptr<DirectX::CommonStates> m_states;
 	
+	// Geometry vars
+	std::unique_ptr<DirectX::CommonStates> m_states;
 	std::unique_ptr<DirectX::GeometricPrimitive> m_shape;
 	std::unique_ptr<DirectX::GeometricPrimitive> m_cubeMap;
 	std::unique_ptr<DirectX::GeometricPrimitive> m_planet;
 	std::unique_ptr<DirectX::Model> m_boat;
 
 	std::unique_ptr<DirectX::IEffectFactory> m_fxFactory;
-	std::unique_ptr<DirectX::EnvironmentMapEffect> m_effect;
+	std::unique_ptr<DirectX::BasicEffect> m_effect;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
+	std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionColor>> m_batch;
+	
+
+	float a,b;
+	float speed, acceleration;
+	// Menu
+	RECT m_menuBackground;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_background;
+	
+	// Pausing game 
+	bool isPaused,menu;
 
 	
-	float a,b;
-
-	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture2;
-
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_cMapTexture;
 
-
+	      
 };

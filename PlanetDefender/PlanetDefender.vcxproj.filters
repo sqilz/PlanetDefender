@@ -66,6 +66,9 @@
     <Image Include="wood.DDS">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="menubackground.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="settings.manifest">

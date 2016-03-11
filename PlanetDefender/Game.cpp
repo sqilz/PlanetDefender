@@ -13,7 +13,7 @@ Game::Game() :
     m_window(0),
     m_outputWidth(800),
     m_outputHeight(600),
-    m_featureLevel(D3D_FEATURE_LEVEL_10_0)
+    m_featureLevel(D3D_FEATURE_LEVEL_11_1)
 {
 }
 
@@ -33,10 +33,8 @@ void Game::Initialize(HWND window, int width, int height)
     /*
     m_timer.SetFixedTimeStep(true);
     m_timer.SetTargetElapsedSeconds(1.0 / 60);
-
-
-
     */
+
 	m_keyboard = std::make_unique<Keyboard>();
 	m_world._41 = -20.f;
 	m_world._43 = -20.f;
@@ -47,10 +45,9 @@ void Game::Tick()
 {
     m_timer.Tick([&]()
     {
-        Update(m_timer);
+       Update(m_timer);
     });
-
-    Render();
+   Render();	
 }
 
 // Updates the world.
@@ -70,38 +67,42 @@ void Game::Update(DX::StepTimer const& timer)
 	{
 		PostQuitMessage(0);
 	}
-	if (kb.A)
+	Menu();
+	if (!isPaused)
 	{
-		m_world3 *= Matrix::CreateTranslation(Vector3(-0.2f, 0.0f, 0.0f));
+		if (kb.A)
+		{
+			m_ship *= Matrix::CreateTranslation(Vector3(-0.2f, 0.0f, 0.0f));
+		}	
+		if (kb.D)
+		{
+			m_ship *= Matrix::CreateTranslation(Vector3(0.2f, 0.0f, 0.0f));
+		}
+		if (kb.W)
+		{
+			//makes geometry transform around its origin, if matrix*Create rotation, it rotates around a point 
+			//m_ship =operator*(Matrix::CreateRotationY(0.1f), m_ship);
+			m_ship *= Matrix::CreateTranslation(Vector3(0.f, .0f, -0.2f));
+		}
+		if (kb.S)
+		{
+			m_ship *= Matrix::CreateTranslation(Vector3(0.0f, .0f, 0.2f));
+			//m_ship = operator*(Matrix::CreateRotationY(-0.1f), m_ship);
+		}
+
+
+		m_planetWorld *= Matrix::CreateRotationY(.001f);
+
+		m_world *= Matrix::CreateRotationY(sinf(2.f*XM_PI / 360.f)) * Matrix::CreateTranslation(Vector3(.1f, .0f, .1f));
+
+		m_skybox *= Matrix::CreateRotationY(.001f);
+		m_skybox *= Matrix::CreateRotationX(.001f);
+		m_skybox *= Matrix::CreateRotationZ(.001f);
+
+		a = m_world._41;
+		b = m_world._43;
 	}
-	if (kb.D)
-	{		
-		m_world3 *= Matrix::CreateTranslation(Vector3(0.2f, 0.0f, 0.0f));
-	}
-	if (kb.W)
-	{
-		//makes geometry transform around its origin, if matrix*Create rotation, it rotates around a point 
-		//m_world3 =operator*(Matrix::CreateRotationY(0.1f), m_world3);
-		m_world3 *= Matrix::CreateTranslation(Vector3(0.f, .0f, -0.2f));
-	}
-	if (kb.S)
-	{
-		m_world3 *= Matrix::CreateTranslation(Vector3(0.0f, .0f, 0.2f));
-		//m_world3 = operator*(Matrix::CreateRotationY(-0.1f), m_world3);
-
-	}
-
-
-	m_planetWorld *= Matrix::CreateRotationY(.001f);
-	
-	m_world *= Matrix::CreateRotationY(sinf(2.f*XM_PI/360.f)) * Matrix::CreateTranslation(Vector3(.1f, .0f, .1f));
-	
-	m_plan2 *= Matrix::CreateRotationY(.0001f);
-
-	a = m_world._41;
-	b = m_world._43;
-
-	m_view = Matrix::CreateLookAt(Vector3(m_world3._41 + 0.f, m_world3._42 + 50.f, m_world3._43 + 50.f), Vector3(m_world3._41, m_world3._42, m_world3._43), Vector3::Up);
+	m_view = Matrix::CreateLookAt(Vector3(m_ship._41 + 0.f, m_ship._42 + 50.f, m_ship._43 + 50.f), Vector3(m_ship._41, m_ship._42, m_ship._43), Vector3::Up);
 
 }
 
@@ -113,39 +114,41 @@ void Game::Render()
     {
         return;
     }
-
     Clear();
-	
+
     // TODO: Add your rendering code here.
-	//float time = float(m_timer.GetTotalSeconds());
-
-
 	
-
+	m_effect->SetWorld(m_skybox);
 	m_shape->Draw(m_world,m_view,m_proj,Colors::White,m_texture.Get());
-	m_cubeMap->Draw(m_plan2, m_view, m_proj, Colors::Azure, m_cMapTexture.Get());
-	
+	m_cubeMap->Draw(m_effect.get(), m_inputLayout.Get());
 	m_planet->Draw(m_planetWorld, m_view, m_proj,Colors::White,m_texture2.Get());
-	m_boat->Draw(m_d3dContext.Get(), *m_states, m_world3, m_view, m_proj);
+	m_boat->Draw(m_d3dContext.Get(), *m_states, m_ship, m_view, m_proj);
 
 	// Draws text
-	
-	
 	std::wstring output = std::wstring(L" X: ")+ std::to_wstring(a) +std::wstring(L"\n Z: ") + std::to_wstring(b);
-
 	m_spriteBatch->Begin();
-
 	Vector2 origin = m_font->MeasureString(output.c_str()) / 2.f;
-
 	m_font->DrawString(m_spriteBatch.get(), output.c_str(),	m_FontPos, Colors::White, 0.f, origin);
-
 	m_spriteBatch->End();
-	/*********/
 
-
+	if (menu)
+	{
+		m_spriteBatch->Begin();
+		m_spriteBatch->Draw(m_background.Get(), m_menuBackground);
+		m_spriteBatch->End();
+	}
 	Present();
 }
 
+void Game::Menu()
+{
+	// for pausing udpate 
+	menu = true;
+	isPaused = false;
+
+	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"menubackground.jpg", nullptr, m_background.ReleaseAndGetAddressOf()));
+	
+}
 // Helper method to clear the back buffers.
 void Game::Clear()
 {
@@ -314,34 +317,42 @@ void Game::CreateDevice()
 	//orbiting planet
 	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"earth.bmp", nullptr, m_texture.ReleaseAndGetAddressOf()));
 	m_shape = GeometricPrimitive::CreateSphere(m_d3dContext.Get());
-	// cubemap?? TODO
-	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"spaceTexture.jpg", nullptr, m_cMapTexture.ReleaseAndGetAddressOf()));
-	m_cubeMap = GeometricPrimitive::CreateSphere(m_d3dContext.Get(),100.f,16,false,true);
-	
-	//m_cubeMap = GeometricPrimitive::CreateBox(m_d3dContext.Get(), XMFLOAT3(50, 50, 50), false, true);
 	
 	
 
+	// SKYBOX
+	// skybox light fix - when loading, default lights were applied to the texture
+	m_effect = std::make_unique<BasicEffect>(m_d3dDevice.Get());
+	m_effect->SetTextureEnabled(true);
+	m_effect->SetPerPixelLighting(true);
+	m_effect->SetLightingEnabled(true);
+	m_effect->SetLightEnabled(0, true);
+	m_effect->SetLightDiffuseColor(0, Colors::White);
+	m_effect->SetLightDirection(0, -Vector3::UnitZ);
+	m_effect->SetFogEnabled(true);
+	m_effect->SetFogStart(6);
+	m_effect->SetFogEnd(1200);
+	m_effect->SetFogColor(Colors::Black);
+
+	m_cubeMap = GeometricPrimitive::CreateSphere(m_d3dContext.Get(),300.f,16,false,true);
+	m_cubeMap->CreateInputLayout(m_effect.get(),
+		m_inputLayout.ReleaseAndGetAddressOf());
+
+	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"spaceTexture.jpg", nullptr, m_cMapTexture.ReleaseAndGetAddressOf()));
+	m_effect->SetTexture(m_cMapTexture.Get());
 
 	m_world = Matrix::Identity;
 	m_planetWorld = Matrix::Identity;
-	m_plan2 = Matrix::Identity;
+	m_skybox = Matrix::Identity;
+	m_ship = Matrix::Identity;
 
-	m_world3 = Matrix::Identity;
-
-	
-	m_world3 = Matrix::CreateScale(Vector3(1.f, 1.f, 1.f));
+	m_ship = Matrix::CreateScale(Vector3(1.f, 1.f, 1.f));
 	m_planetWorld = Matrix::CreateScale(Vector3(9.f, 9.f, 9.f));
 	m_world = Matrix::CreateScale(Vector3(4.f, 4.f, 4.f));
-	m_plan2 = Matrix::CreateScale(Vector3(5.f, 5.f, 5.f));
-
-
+	m_skybox = Matrix::CreateScale(Vector3(5.f, 5.f, 5.f));
+	
 	m_font = std::make_unique<SpriteFont>(m_d3dDevice.Get(), L"c.spritefont");
 	m_spriteBatch = std::make_unique<SpriteBatch>(m_d3dContext.Get());
-
-
-	
-
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.
@@ -464,17 +475,24 @@ void Game::CreateResources()
 	
 	// FOV
 	m_proj = Matrix::CreatePerspectiveFieldOfView(XM_PI / 2.5f, float(backBufferWidth) / float(backBufferHeight),0.1f,1000.f);
-
+	m_effect->SetView(m_view);
+	m_effect->SetProjection(m_proj);
 
 	//font position
 	m_FontPos.x = backBufferWidth / 5.f;
 	m_FontPos.y = backBufferHeight / 6.f;
+
+	// menu background position
+	m_menuBackground.left = 0;
+	m_menuBackground.top = 0;
+	m_menuBackground.right = backBufferWidth;
+	m_menuBackground.bottom = backBufferHeight;
+
 }
 
 void Game::OnDeviceLost()
 {
     // TODO: Add Direct3D resource cleanup here.
-
     m_depthStencilView.Reset();
     m_renderTargetView.Reset();
     m_swapChain1.Reset();
@@ -492,6 +510,7 @@ void Game::OnDeviceLost()
 	m_texture.Reset();
 	m_texture2.Reset();
 	m_cMapTexture.Reset();
+	m_background.Reset();
 	// geometry & font
 	m_cubeMap.reset();
 	m_shape.reset();

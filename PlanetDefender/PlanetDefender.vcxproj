@@ -178,6 +178,7 @@
     <Image Include="cubemap.dds" />
     <Image Include="directx.ico" />
     <Image Include="earth.bmp" />
+    <Image Include="menubackground.jpg" />
     <Image Include="spaceTexture.jpg" />
     <Image Include="starfield.png" />
     <Image Include="wood.DDS" />
