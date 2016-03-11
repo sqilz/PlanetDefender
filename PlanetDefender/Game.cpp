@@ -96,7 +96,9 @@ void Game::Update(DX::StepTimer const& timer)
 	
 	m_world *= Matrix::CreateRotationY(sinf(2.f*XM_PI/360.f)) * Matrix::CreateTranslation(Vector3(.1f, .0f, .1f));
 	
-	m_plan2 *= Matrix::CreateRotationY(.0001f);
+	m_plan2 *= Matrix::CreateRotationY(.001f);
+	m_plan2 *= Matrix::CreateRotationX(.001f);
+	m_plan2 *= Matrix::CreateRotationZ(.001f);
 
 	a = m_world._41;
 	b = m_world._43;
@@ -316,7 +318,7 @@ void Game::CreateDevice()
 	m_shape = GeometricPrimitive::CreateSphere(m_d3dContext.Get());
 	// cubemap?? TODO
 	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"spaceTexture.jpg", nullptr, m_cMapTexture.ReleaseAndGetAddressOf()));
-	m_cubeMap = GeometricPrimitive::CreateSphere(m_d3dContext.Get(),100.f,16,false,true);
+	m_cubeMap = GeometricPrimitive::CreateSphere(m_d3dContext.Get(),300.f,16,false,true);
 	
 	//m_cubeMap = GeometricPrimitive::CreateBox(m_d3dContext.Get(), XMFLOAT3(50, 50, 50), false, true);
 	
