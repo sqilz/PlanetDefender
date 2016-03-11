@@ -63,7 +63,7 @@ void Game::Update(DX::StepTimer const& timer)
 	/* KEYBOARD BUTTONS */
 	auto kb = m_keyboard->GetState();
 	
-	if (kb.Escape)
+	if (kb.F1)
 	{
 		PostQuitMessage(0);
 	}
@@ -145,7 +145,7 @@ void Game::Menu()
 	// for pausing udpate 
 	menu = true;
 	isPaused = false;
-
+	
 	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"menubackground.jpg", nullptr, m_background.ReleaseAndGetAddressOf()));
 	
 }
@@ -213,7 +213,6 @@ void Game::OnWindowSizeChanged(int width, int height)
     CreateResources();
 
     // TODO: Game window is being resized.
-
 }
 
 // Properties
@@ -307,8 +306,6 @@ void Game::CreateDevice()
 	m_states = std::make_unique<CommonStates>(m_d3dDevice.Get());
 	m_fxFactory = std::make_unique<EffectFactory>(m_d3dDevice.Get());
 	
-
-
 	// ship model
 	m_boat = Model::CreateFromCMO(m_d3dDevice.Get(), L"old_boat.cmo", *m_fxFactory);
 	//center planet
@@ -318,8 +315,6 @@ void Game::CreateDevice()
 	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"earth.bmp", nullptr, m_texture.ReleaseAndGetAddressOf()));
 	m_shape = GeometricPrimitive::CreateSphere(m_d3dContext.Get());
 	
-	
-
 	// SKYBOX
 	// skybox light fix - when loading, default lights were applied to the texture
 	m_effect = std::make_unique<BasicEffect>(m_d3dDevice.Get());

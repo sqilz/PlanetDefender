@@ -51,9 +51,6 @@
     <Image Include="directx.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="starfield.png">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="earth.bmp">
       <Filter>Resource Files</Filter>
     </Image>
@@ -61,9 +58,6 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="cubemap.dds">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="wood.DDS">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="menubackground.jpg">
@@ -81,9 +75,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="c.spritefont">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="cup.cmo">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

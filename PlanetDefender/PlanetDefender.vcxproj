@@ -180,15 +180,12 @@
     <Image Include="earth.bmp" />
     <Image Include="menubackground.jpg" />
     <Image Include="spaceTexture.jpg" />
-    <Image Include="starfield.png" />
-    <Image Include="wood.DDS" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="settings.manifest" />
   </ItemGroup>
   <ItemGroup>
     <None Include="c.spritefont" />
-    <None Include="cup.cmo" />
     <None Include="old_boat.cmo" />
     <None Include="packages.config" />
   </ItemGroup>
