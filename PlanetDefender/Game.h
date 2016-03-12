@@ -37,7 +37,7 @@ public:
     void GetDefaultSize( int& width, int& height ) const;
 
 	//Main Menu
-	void Menu();
+	bool Menu(bool pause, bool buttonTextureChanger, bool newbtnhover, bool exitbtnhover);
 
 private:
 
@@ -68,8 +68,9 @@ private:
     // Rendering loop timer.
     DX::StepTimer                                   m_timer;
 	
-	//pointer to keyboard interface
+	//pointer to keyboard/mouse interface
 	std::unique_ptr<DirectX::Keyboard> m_keyboard;
+	std::unique_ptr<DirectX::Mouse> m_mouse;
 
 	//world and world2 responsible for local coordinates of objects
 	
@@ -101,12 +102,15 @@ private:
 	float a,b;
 	float speed, acceleration;
 	// Menu
-	RECT m_menuBackground;
+	RECT m_menuBackground, m_newGame, m_exit;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_background;
-	
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_btnNewGame;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_btnExit;
 	// Pausing game 
 	bool isPaused,menu;
-
+	bool menuOn;
+	bool continuebtn;
+	bool newgamebtnHover, exitbtnHover;
 	
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture2;

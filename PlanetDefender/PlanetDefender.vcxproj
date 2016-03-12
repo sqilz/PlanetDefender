@@ -175,10 +175,13 @@
     <ResourceCompile Include="resource.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="continue.jpg" />
     <Image Include="cubemap.dds" />
     <Image Include="directx.ico" />
     <Image Include="earth.bmp" />
+    <Image Include="exit.jpg" />
     <Image Include="menubackground.jpg" />
+    <Image Include="newGame.jpg" />
     <Image Include="spaceTexture.jpg" />
   </ItemGroup>
   <ItemGroup>

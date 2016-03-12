@@ -63,6 +63,15 @@
     <Image Include="menubackground.jpg">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="exit.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="newGame.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="continue.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="settings.manifest">

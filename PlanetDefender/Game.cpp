@@ -11,8 +11,8 @@ using Microsoft::WRL::ComPtr;
 
 Game::Game() :
     m_window(0),
-    m_outputWidth(800),
-    m_outputHeight(600),
+	m_outputWidth(1270),
+    m_outputHeight(860),
     m_featureLevel(D3D_FEATURE_LEVEL_11_1)
 {
 }
@@ -23,21 +23,25 @@ void Game::Initialize(HWND window, int width, int height)
     m_window = window;
     m_outputWidth = std::max(width, 1);
     m_outputHeight = std::max(height, 1);
-
+	
     CreateDevice();
 
     CreateResources();
 
     // TODO: Change the timer settings if you want something other than the default variable timestep mode.
     // e.g. for 60 FPS fixed timestep update logic , call:
-    /*
+    
     m_timer.SetFixedTimeStep(true);
     m_timer.SetTargetElapsedSeconds(1.0 / 60);
-    */
-
+    
 	m_keyboard = std::make_unique<Keyboard>();
+	m_mouse = std::make_unique<Mouse>();
+	m_mouse->SetWindow(window);
 	m_world._41 = -20.f;
 	m_world._43 = -20.f;
+	menuOn = true;
+	newgamebtnHover = true;
+	exitbtnHover = true;
 }
 
 // Executes the basic game loop.
@@ -60,35 +64,68 @@ void Game::Update(DX::StepTimer const& timer)
 	float time = float(timer.GetTotalSeconds());
 	
 	float newTime = time - elapsedTime;
-	/* KEYBOARD BUTTONS */
+	// KEYBOARD AND MOUSE INITIALISATION 
 	auto kb = m_keyboard->GetState();
+	auto mouse = m_mouse->GetState();
 	
 	if (kb.F1)
 	{
 		PostQuitMessage(0);
 	}
-	Menu();
+
+	// showing/hiding menu
+	if (kb.Escape)
+		menuOn = true;
+
+	// New game/ continue button color change on hover
+	if (mouse.x > m_newGame.left && mouse.x < m_newGame.right && mouse.y > m_newGame.top && mouse.y < m_newGame.bottom)
+		newgamebtnHover = false;
+	else
+		newgamebtnHover = true;
+	/***********************/
+
+	// Exit button color change on hover
+	if (mouse.x > m_exit.left && mouse.x < m_exit.right && mouse.y > m_exit.top && mouse.y < m_exit.bottom && menuOn == true)
+		exitbtnHover = false;
+	else
+		exitbtnHover = true;
+	/***********************/
+
+	// specifying the clickable area where buttons are
+	if (mouse.leftButton)
+	{	
+		// When new game/continue button is clicked start game
+		if (mouse.x > m_newGame.left && mouse.x < m_newGame.right && mouse.y > m_newGame.top && mouse.y < m_newGame.bottom)
+		{
+			menuOn = false;
+			continuebtn = true;	
+		}
+
+		// when exit button is clicked - exit
+		if (mouse.x > m_exit.left && mouse.x < m_exit.right && mouse.y > m_exit.top && mouse.y < m_exit.bottom && menuOn == true)			
+			PostQuitMessage(0);
+	}
+	/***********************/
+
+	Menu(menuOn, continuebtn, newgamebtnHover, exitbtnHover);
+
+	// Pausing game if menu is not hidden
 	if (!isPaused)
 	{
 		if (kb.A)
-		{
 			m_ship *= Matrix::CreateTranslation(Vector3(-0.2f, 0.0f, 0.0f));
-		}	
+
 		if (kb.D)
-		{
 			m_ship *= Matrix::CreateTranslation(Vector3(0.2f, 0.0f, 0.0f));
-		}
+		
 		if (kb.W)
-		{
-			//makes geometry transform around its origin, if matrix*Create rotation, it rotates around a point 
 			//m_ship =operator*(Matrix::CreateRotationY(0.1f), m_ship);
 			m_ship *= Matrix::CreateTranslation(Vector3(0.f, .0f, -0.2f));
-		}
+		
 		if (kb.S)
-		{
 			m_ship *= Matrix::CreateTranslation(Vector3(0.0f, .0f, 0.2f));
-			//m_ship = operator*(Matrix::CreateRotationY(-0.1f), m_ship);
-		}
+			///m_ship = operator*(Matrix::CreateRotationY(-0.1f), m_ship);
+		
 
 
 		m_planetWorld *= Matrix::CreateRotationY(.001f);
@@ -106,6 +143,7 @@ void Game::Update(DX::StepTimer const& timer)
 
 }
 
+	
 // Draws the scene.
 void Game::Render()
 {
@@ -130,24 +168,53 @@ void Game::Render()
 	Vector2 origin = m_font->MeasureString(output.c_str()) / 2.f;
 	m_font->DrawString(m_spriteBatch.get(), output.c_str(),	m_FontPos, Colors::White, 0.f, origin);
 	m_spriteBatch->End();
-
+	
+	//for drawing menu
 	if (menu)
 	{
 		m_spriteBatch->Begin();
+
+		// background texture drawing
 		m_spriteBatch->Draw(m_background.Get(), m_menuBackground);
+
+		// new game/continue + color change
+		if (newgamebtnHover)
+		m_spriteBatch->Draw(m_btnNewGame.Get(), m_newGame);
+		else
+		m_spriteBatch->Draw(m_btnNewGame.Get(), m_newGame, Colors::Chartreuse);
+
+		// exit button + color change
+		if (exitbtnHover)
+		m_spriteBatch->Draw(m_btnExit.Get(), m_exit);
+		else
+		m_spriteBatch->Draw(m_btnExit.Get(), m_exit, Colors::Chartreuse);
+
 		m_spriteBatch->End();
 	}
 	Present();
 }
 
-void Game::Menu()
+bool Game::Menu(bool menuAndPause, bool contbtn, bool newgamebtn, bool exitbtn)
 {
-	// for pausing udpate 
-	menu = true;
-	isPaused = false;
+	// for pausing udpate / showing menu
+	menu = menuAndPause;
+	isPaused = menuAndPause;
+	newgamebtnHover = newgamebtn;
+	exitbtnHover = exitbtn;
+
+	// main menu textures for bg and buttons
+	continuebtn = contbtn;
+	if (continuebtn == true)
+		DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"continue.jpg", nullptr, m_btnNewGame.ReleaseAndGetAddressOf()));
 	
+	if (m_background.Get() == nullptr)
 	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"menubackground.jpg", nullptr, m_background.ReleaseAndGetAddressOf()));
-	
+	if (m_btnNewGame == nullptr)
+	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"newGame.jpg", nullptr, m_btnNewGame.ReleaseAndGetAddressOf()));
+	if (m_btnExit == nullptr)
+	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"exit.jpg", nullptr, m_btnExit.ReleaseAndGetAddressOf()));
+
+	return menu;
 }
 // Helper method to clear the back buffers.
 void Game::Clear()
@@ -482,7 +549,16 @@ void Game::CreateResources()
 	m_menuBackground.top = 0;
 	m_menuBackground.right = backBufferWidth;
 	m_menuBackground.bottom = backBufferHeight;
-
+	// New Game button position
+	m_newGame.left = long(backBufferWidth / 2.5f);
+	m_newGame.top = long(backBufferHeight / 4.1f);
+	m_newGame.right = long(backBufferWidth / 1.7f);
+	m_newGame.bottom = long(backBufferHeight / 2.8f);
+	// Exit button position
+	m_exit.left = long(backBufferWidth / 2.5f);
+	m_exit.top = long(backBufferHeight / 2.75f);
+	m_exit.right = long(backBufferWidth / 1.7f);
+	m_exit.bottom = long(backBufferHeight / 2.095f);
 }
 
 void Game::OnDeviceLost()
