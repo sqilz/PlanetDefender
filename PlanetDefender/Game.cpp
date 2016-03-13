@@ -42,6 +42,7 @@ void Game::Initialize(HWND window, int width, int height)
 	menuOn = true;
 	newgamebtnHover = true;
 	exitbtnHover = true;
+	speed = 0.6f;
 }
 
 // Executes the basic game loop.
@@ -112,38 +113,42 @@ void Game::Update(DX::StepTimer const& timer)
 	// Pausing game if menu is not hidden
 	if (!isPaused)
 	{
+	
+		
 		if (kb.A)
-			m_ship *= Matrix::CreateTranslation(Vector3(-0.2f, 0.0f, 0.0f));
-
+			m_ship = Matrix::CreateTranslation(-Vector3::Forward * speed)*Matrix::CreateRotationY(.1f)*m_ship;
+				
 		if (kb.D)
-			m_ship *= Matrix::CreateTranslation(Vector3(0.2f, 0.0f, 0.0f));
-		
+			m_ship = Matrix::CreateTranslation(-Vector3::Forward * speed)*Matrix::CreateRotationY(-.1f)*m_ship;
+
 		if (kb.W)
-			//m_ship =operator*(Matrix::CreateRotationY(0.1f), m_ship);
-			m_ship *= Matrix::CreateTranslation(Vector3(0.f, .0f, -0.2f));
-		
+			m_ship = Matrix::CreateTranslation(-Vector3::Forward*speed)*Matrix::CreateRotationY(0.f)*m_ship;;
+			
 		if (kb.S)
 			m_ship *= Matrix::CreateTranslation(Vector3(0.0f, .0f, 0.2f));
-			///m_ship = operator*(Matrix::CreateRotationY(-0.1f), m_ship);
+		
 		
 
-
+		// star rotation around Y axis
 		m_planetWorld *= Matrix::CreateRotationY(.001f);
 
+		// planet orbiting
 		m_world *= Matrix::CreateRotationY(sinf(2.f*XM_PI / 360.f)) * Matrix::CreateTranslation(Vector3(.1f, .0f, .1f));
-
+		
+		// makes the background "space" texture rotate slowly
 		m_skybox *= Matrix::CreateRotationY(.001f);
 		m_skybox *= Matrix::CreateRotationX(.001f);
 		m_skybox *= Matrix::CreateRotationZ(.001f);
-
+		
 		a = m_world._41;
 		b = m_world._43;
 	}
+	// makes the camera look at the spaceship
 	m_view = Matrix::CreateLookAt(Vector3(m_ship._41 + 0.f, m_ship._42 + 50.f, m_ship._43 + 50.f), Vector3(m_ship._41, m_ship._42, m_ship._43), Vector3::Up);
-
 }
 
-	
+
+
 // Draws the scene.
 void Game::Render()
 {

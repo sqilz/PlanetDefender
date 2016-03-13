@@ -111,7 +111,9 @@ private:
 	bool menuOn;
 	bool continuebtn;
 	bool newgamebtnHover, exitbtnHover;
+
 	
+
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture2;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_cMapTexture;
