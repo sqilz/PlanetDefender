@@ -9,9 +9,8 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{7272403a-b961-4d35-938f-f885f38c7f2c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -43,48 +42,40 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="resource.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
+    <None Include="packages.config" />
+    <None Include="droidfighter.cmo">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="old_boat.cmo">
+      <Filter>Resources</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="directx.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="earth.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="spaceTexture.jpg">
-      <Filter>Resource Files</Filter>
+    <Image Include="continue.jpg">
+      <Filter>Resources</Filter>
     </Image>
     <Image Include="cubemap.dds">
-      <Filter>Resource Files</Filter>
+      <Filter>Resources</Filter>
     </Image>
-    <Image Include="menubackground.jpg">
-      <Filter>Resource Files</Filter>
+    <Image Include="earth.bmp">
+      <Filter>Resources</Filter>
     </Image>
     <Image Include="exit.jpg">
-      <Filter>Resource Files</Filter>
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="menubackground.jpg">
+      <Filter>Resources</Filter>
     </Image>
     <Image Include="newGame.jpg">
-      <Filter>Resource Files</Filter>
+      <Filter>Resources</Filter>
     </Image>
-    <Image Include="continue.jpg">
-      <Filter>Resource Files</Filter>
+    <Image Include="spaceTexture.jpg">
+      <Filter>Resources</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <Manifest Include="settings.manifest">
-      <Filter>Resource Files</Filter>
-    </Manifest>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-    <None Include="old_boat.cmo">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="c.spritefont">
-      <Filter>Resource Files</Filter>
-    </None>
+    <Media Include="sandstorm.wav">
+      <Filter>Resources</Filter>
+    </Media>
   </ItemGroup>
 </Project>

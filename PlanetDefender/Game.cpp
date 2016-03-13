@@ -16,7 +16,14 @@ Game::Game() :
     m_featureLevel(D3D_FEATURE_LEVEL_11_1)
 {
 }
-
+Game::~Game()
+{
+	if (m_audio)
+	{
+		m_audio->Suspend();
+	}
+	m_bgAudioLoop.reset();
+}
 // Initialize the Direct3D resources required to run.
 void Game::Initialize(HWND window, int width, int height)
 {
@@ -34,6 +41,20 @@ void Game::Initialize(HWND window, int width, int height)
     m_timer.SetFixedTimeStep(true);
     m_timer.SetTargetElapsedSeconds(1.0 / 60);
     
+	AUDIO_ENGINE_FLAGS eflags = AudioEngine_Default;
+#ifdef _DEBUG
+	eflags = eflags | AudioEngine_Debug;
+#endif
+	m_audio = std::make_unique<AudioEngine>(eflags);
+	m_retryAudio = false;
+
+	m_bgAudio = std::make_unique<SoundEffect>(m_audio.get(), L"sandstorm.wav");
+	m_bgAudioLoop = m_bgAudio->CreateInstance();
+	m_bgAudioLoop->Play(true);
+	
+
+	explodeDelay = 2.f;
+
 	m_keyboard = std::make_unique<Keyboard>();
 	m_mouse = std::make_unique<Mouse>();
 	m_mouse->SetWindow(window);
@@ -113,8 +134,6 @@ void Game::Update(DX::StepTimer const& timer)
 	// Pausing game if menu is not hidden
 	if (!isPaused)
 	{
-	
-		
 		if (kb.A)
 			m_ship = Matrix::CreateTranslation(-Vector3::Forward * speed)*Matrix::CreateRotationY(.1f)*m_ship;
 				
@@ -127,8 +146,6 @@ void Game::Update(DX::StepTimer const& timer)
 		if (kb.S)
 			m_ship *= Matrix::CreateTranslation(Vector3(0.0f, .0f, 0.2f));
 		
-		
-
 		// star rotation around Y axis
 		m_planetWorld *= Matrix::CreateRotationY(.001f);
 
@@ -145,10 +162,33 @@ void Game::Update(DX::StepTimer const& timer)
 	}
 	// makes the camera look at the spaceship
 	m_view = Matrix::CreateLookAt(Vector3(m_ship._41 + 0.f, m_ship._42 + 50.f, m_ship._43 + 50.f), Vector3(m_ship._41, m_ship._42, m_ship._43), Vector3::Up);
+
+	if (m_retryAudio)
+	{
+		m_retryAudio = false;
+		if (m_audio->Reset())
+		{
+			// TODO: restart any looped sounds here
+			if (m_bgAudioLoop)
+				m_bgAudioLoop->Play(true);
+		}
+	}
+	else if (!m_audio->Update())
+	{
+		if (m_audio->IsCriticalError())
+		{
+			m_retryAudio = true;
+		}
+	}
+	/*explodeDelay -= elapsedTime;
+	if (explodeDelay < 0.f)
+	{
+		m_bgAudio->Play();
+		
+		std::uniform_real_distribution<float> dist(1.f, 10.f);
+		
+	}*/
 }
-
-
-
 // Draws the scene.
 void Game::Render()
 {
@@ -165,7 +205,7 @@ void Game::Render()
 	m_shape->Draw(m_world,m_view,m_proj,Colors::White,m_texture.Get());
 	m_cubeMap->Draw(m_effect.get(), m_inputLayout.Get());
 	m_planet->Draw(m_planetWorld, m_view, m_proj,Colors::White,m_texture2.Get());
-	m_boat->Draw(m_d3dContext.Get(), *m_states, m_ship, m_view, m_proj);
+	m_starship->Draw(m_d3dContext.Get(), *m_states, m_ship, m_view, m_proj);
 
 	// Draws text
 	std::wstring output = std::wstring(L" X: ")+ std::to_wstring(a) +std::wstring(L"\n Z: ") + std::to_wstring(b);
@@ -268,6 +308,7 @@ void Game::OnDeactivated()
 void Game::OnSuspending()
 {
     // TODO: Game is being power-suspended (or minimized).
+	m_audio->Suspend();
 }
 
 void Game::OnResuming()
@@ -275,6 +316,8 @@ void Game::OnResuming()
     m_timer.ResetElapsedTime();
 
     // TODO: Game is being power-resumed (or returning from minimize).
+	m_audio->Resume();
+	explodeDelay = 2.f;
 }
 
 void Game::OnWindowSizeChanged(int width, int height)
@@ -379,7 +422,7 @@ void Game::CreateDevice()
 	m_fxFactory = std::make_unique<EffectFactory>(m_d3dDevice.Get());
 	
 	// ship model
-	m_boat = Model::CreateFromCMO(m_d3dDevice.Get(), L"old_boat.cmo", *m_fxFactory);
+	m_starship = Model::CreateFromCMO(m_d3dDevice.Get(), L"droidfighter.cmo", *m_fxFactory);
 	//center planet
 	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"earth.bmp", nullptr, m_texture2.ReleaseAndGetAddressOf()));
 	m_planet = GeometricPrimitive::CreateSphere(m_d3dContext.Get());
@@ -413,7 +456,7 @@ void Game::CreateDevice()
 	m_skybox = Matrix::Identity;
 	m_ship = Matrix::Identity;
 
-	m_ship = Matrix::CreateScale(Vector3(1.f, 1.f, 1.f));
+	m_ship = Matrix::CreateScale(Vector3(1.2f, 1.2f, 1.2f));
 	m_planetWorld = Matrix::CreateScale(Vector3(9.f, 9.f, 9.f));
 	m_world = Matrix::CreateScale(Vector3(4.f, 4.f, 4.f));
 	m_skybox = Matrix::CreateScale(Vector3(5.f, 5.f, 5.f));
@@ -592,7 +635,7 @@ void Game::OnDeviceLost()
 	m_shape.reset();
 	m_planet.reset();
 	m_font.reset();
-	m_boat.reset();
+	m_starship.reset();
 
 	CreateDevice();
 

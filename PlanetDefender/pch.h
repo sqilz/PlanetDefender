@@ -37,11 +37,12 @@
 #include "SpriteFont.h"
 #include "VertexTypes.h"
 #include "WICTextureLoader.h"
-
+#include "Audio.h"
 
 #include <algorithm>
 #include <exception>
 #include <memory>
+#include <random>
 
 namespace DX
 {

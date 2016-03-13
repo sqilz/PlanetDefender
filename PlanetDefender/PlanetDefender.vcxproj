@@ -172,12 +172,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="resource.rc" />
+    <None Include="droidfighter.cmo" />
+    <None Include="old_boat.cmo" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="continue.jpg" />
     <Image Include="cubemap.dds" />
-    <Image Include="directx.ico" />
     <Image Include="earth.bmp" />
     <Image Include="exit.jpg" />
     <Image Include="menubackground.jpg" />
@@ -185,12 +186,7 @@
     <Image Include="spaceTexture.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <Manifest Include="settings.manifest" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="c.spritefont" />
-    <None Include="old_boat.cmo" />
-    <None Include="packages.config" />
+    <Media Include="sandstorm.wav" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

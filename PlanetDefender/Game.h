@@ -14,7 +14,7 @@ class Game
 public:
 
     Game();
-
+	~Game();
     // Initialization and management
     void Initialize(HWND window, int width, int height);
 
@@ -32,7 +32,7 @@ public:
     void OnSuspending();
     void OnResuming();
     void OnWindowSizeChanged(int width, int height);
-
+	void OnNewAudioDevice() { m_retryAudio = true; }
     // Properties
     void GetDefaultSize( int& width, int& height ) const;
 
@@ -91,7 +91,7 @@ private:
 	std::unique_ptr<DirectX::GeometricPrimitive> m_shape;
 	std::unique_ptr<DirectX::GeometricPrimitive> m_cubeMap;
 	std::unique_ptr<DirectX::GeometricPrimitive> m_planet;
-	std::unique_ptr<DirectX::Model> m_boat;
+	std::unique_ptr<DirectX::Model> m_starship;
 
 	std::unique_ptr<DirectX::IEffectFactory> m_fxFactory;
 	std::unique_ptr<DirectX::BasicEffect> m_effect;
@@ -112,11 +112,14 @@ private:
 	bool continuebtn;
 	bool newgamebtnHover, exitbtnHover;
 
-	
-
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture2;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_cMapTexture;
 
-	      
+	std::unique_ptr<DirectX::AudioEngine> m_audio;
+	bool m_retryAudio;
+	std::unique_ptr<DirectX::SoundEffect> m_bgAudio;
+	std::unique_ptr<DirectX::SoundEffectInstance> m_bgAudioLoop;
+	//std::unique_ptr<std::mt19937> m_random;
+	float explodeDelay;
 };
