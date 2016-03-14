@@ -38,10 +38,10 @@ public:
 
 	//Main Menu
 	bool Menu(bool pause, bool buttonTextureChanger, bool newbtnhover, bool exitbtnhover);
-
+	bool Shoot(bool shoot);
 private:
 
-    void Update(DX::StepTimer const& timer);
+   void Update(DX::StepTimer const& timer);
 
     void CreateDevice();
     void CreateResources();
@@ -77,21 +77,27 @@ private:
 	DirectX::SimpleMath::Matrix m_planetWorld;
 	DirectX::SimpleMath::Matrix m_world;
 	DirectX::SimpleMath::Matrix m_ship;
+	DirectX::SimpleMath::Matrix m_bullet;
 	DirectX::SimpleMath::Matrix m_skybox;
 	DirectX::SimpleMath::Matrix m_view;
 	DirectX::SimpleMath::Matrix m_proj;
-	
+	DirectX::SimpleMath::Matrix testm;
 	//font
 	DirectX::SimpleMath::Vector2 m_FontPos;
 	std::unique_ptr<DirectX::SpriteFont> m_font;
 	std::unique_ptr<DirectX::SpriteBatch> m_spriteBatch;
 	
-	// Geometry vars
+	// Geometry 
 	std::unique_ptr<DirectX::CommonStates> m_states;
 	std::unique_ptr<DirectX::GeometricPrimitive> m_shape;
 	std::unique_ptr<DirectX::GeometricPrimitive> m_cubeMap;
 	std::unique_ptr<DirectX::GeometricPrimitive> m_planet;
+	
+	std::unique_ptr<DirectX::GeometricPrimitive> m_projectile;
 	std::unique_ptr<DirectX::Model> m_starship;
+	bool shoot;
+	DirectX::SimpleMath::Vector3 m_shipPos, m_bulletPos;
+
 
 	std::unique_ptr<DirectX::IEffectFactory> m_fxFactory;
 	std::unique_ptr<DirectX::BasicEffect> m_effect;
@@ -111,6 +117,7 @@ private:
 	bool menuOn;
 	bool continuebtn;
 	bool newgamebtnHover, exitbtnHover;
+	
 
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture2;
