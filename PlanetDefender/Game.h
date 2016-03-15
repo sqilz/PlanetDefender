@@ -77,11 +77,11 @@ private:
 	DirectX::SimpleMath::Matrix m_planetWorld;
 	DirectX::SimpleMath::Matrix m_world;
 	DirectX::SimpleMath::Matrix m_ship;
-	DirectX::SimpleMath::Matrix m_bullet;
+	DirectX::SimpleMath::Matrix m_bullet[10];
 	DirectX::SimpleMath::Matrix m_skybox;
 	DirectX::SimpleMath::Matrix m_view;
 	DirectX::SimpleMath::Matrix m_proj;
-	DirectX::SimpleMath::Matrix testm;
+
 	//font
 	DirectX::SimpleMath::Vector2 m_FontPos;
 	std::unique_ptr<DirectX::SpriteFont> m_font;
@@ -93,7 +93,7 @@ private:
 	std::unique_ptr<DirectX::GeometricPrimitive> m_cubeMap;
 	std::unique_ptr<DirectX::GeometricPrimitive> m_planet;
 	
-	std::unique_ptr<DirectX::GeometricPrimitive> m_projectile;
+	std::unique_ptr<DirectX::GeometricPrimitive> m_projectile[10];
 	std::unique_ptr<DirectX::Model> m_starship;
 	bool shoot;
 	DirectX::SimpleMath::Vector3 m_shipPos, m_bulletPos;
