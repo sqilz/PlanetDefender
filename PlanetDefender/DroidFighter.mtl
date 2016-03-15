@@ -8,6 +8,6 @@ Kd 0.640000 0.640000 0.640000
 Ks 0.231884 0.231884 0.231884
 Ni 1.000000
 d 1.000000
-illum 2
+illum 10
 map_Kd diffuseTexture.png
 map_Bump SpecularTexture.png
