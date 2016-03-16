@@ -5,8 +5,8 @@
 #pragma once
 
 #include "StepTimer.h"
-#include "AnimatedTexture.h"
-#include "ScrollingBackground.h"
+
+
 // A basic game implementation that creates a D3D11 device and
 // provides a game loop.
 class Game
@@ -38,8 +38,8 @@ public:
 
 	//Main Menu
 	bool Menu(bool pause, bool buttonTextureChanger, bool newbtnhover, bool exitbtnhover);
-	bool Shoot(bool shoot);
-private:
+	bool Shoot(bool shoot,bool shoot2);
+protected:
 
    void Update(DX::StepTimer const& timer);
 
@@ -71,13 +71,12 @@ private:
 	//pointer to keyboard/mouse interface
 	std::unique_ptr<DirectX::Keyboard> m_keyboard;
 	std::unique_ptr<DirectX::Mouse> m_mouse;
-
-	//world and world2 responsible for local coordinates of objects
 	
 	DirectX::SimpleMath::Matrix m_planetWorld;
 	DirectX::SimpleMath::Matrix m_world;
 	DirectX::SimpleMath::Matrix m_ship;
-	DirectX::SimpleMath::Matrix m_bullet[10];
+	DirectX::SimpleMath::Matrix m_bullet;
+	DirectX::SimpleMath::Matrix m_bullet2;
 	DirectX::SimpleMath::Matrix m_skybox;
 	DirectX::SimpleMath::Matrix m_view;
 	DirectX::SimpleMath::Matrix m_proj;
@@ -93,22 +92,26 @@ private:
 	std::unique_ptr<DirectX::GeometricPrimitive> m_cubeMap;
 	std::unique_ptr<DirectX::GeometricPrimitive> m_planet;
 	
-	std::unique_ptr<DirectX::GeometricPrimitive> m_projectile[10];
+	//std::unique_ptr<DirectX::GeometricPrimitive> m_projectile;
+	std::unique_ptr<DirectX::GeometricPrimitive> m_projectile;
+	std::unique_ptr<DirectX::GeometricPrimitive> m_projectile2;
+	//std::vector<DirectX::GeometricPrimitive> m_projectiles = std::vector<DirectX::GeometricPrimitive>(10);
+	
 	std::unique_ptr<DirectX::Model> m_starship;
-	bool shoot;
+	bool shoot1,shoot2;
+	bool draw;
 	DirectX::SimpleMath::Vector3 m_shipPos, m_bulletPos;
-
 
 	std::unique_ptr<DirectX::IEffectFactory> m_fxFactory;
 	std::unique_ptr<DirectX::BasicEffect> m_effect;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
 	std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionColor>> m_batch;
 	
-
 	float a,b;
 	float speed, acceleration;
 	// Menu
 	RECT m_menuBackground, m_newGame, m_exit;
+
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_background;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_btnNewGame;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_btnExit;
@@ -117,7 +120,6 @@ private:
 	bool menuOn;
 	bool continuebtn;
 	bool newgamebtnHover, exitbtnHover;
-	
 
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture2;
@@ -127,6 +129,6 @@ private:
 	bool m_retryAudio;
 	std::unique_ptr<DirectX::SoundEffect> m_bgAudio;
 	std::unique_ptr<DirectX::SoundEffectInstance> m_bgAudioLoop;
-	//std::unique_ptr<std::mt19937> m_random;
+
 	float explodeDelay;
 };

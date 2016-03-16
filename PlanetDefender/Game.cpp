@@ -4,7 +4,7 @@
 
 #include "pch.h"
 #include "Game.h"
-
+#include "Bullet.h"
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
 using Microsoft::WRL::ComPtr;
@@ -68,9 +68,9 @@ void Game::Initialize(HWND window, int width, int height)
 	//m_bullet = Matrix::CreateRotationY(m_ship._42) * m_ship;
 
 	m_ship._43 = 30.f; // spawn position on Z changed so ship doesnt spawn inside a planet
-
-
-
+	m_bullet._41 = m_ship._41;
+	m_bullet._42 = m_ship._42;
+	m_bullet._43 = m_ship._43;
 }
 
 // Executes the basic game loop.
@@ -99,18 +99,10 @@ void Game::Update(DX::StepTimer const& timer)
 	auto mouse = m_mouse->GetState();
 	
 	m_shipPos = Vector3(m_ship._41, m_ship._42, m_ship._43);
-	for (int i = 0; i < 10; i++)
-	{
-		for (int c = 0; c < 10; c++)
-		{
-			m_bulletPos = Vector3(m_bullet[i]._41 + float(c), m_bullet[i]._42, m_bullet[i]._43);
-		}
-	}
+	m_bulletPos = Vector3(m_bullet._41 + float(1), m_bullet._42, m_bullet._43);
 
 	if (kb.F1)
-	{
 		PostQuitMessage(0);
-	}
 
 	// showing/hiding menu
 	if (kb.Escape)
@@ -163,11 +155,23 @@ void Game::Update(DX::StepTimer const& timer)
 		if (kb.S)
 			m_ship *= Matrix::CreateTranslation(Vector3(0.0f, .0f, 0.2f));
 		// shooting
-		if (kb.Space)
-			Shoot(true);
-		else
-			Shoot(false);
 
+		
+		if (kb.Space){
+			//m_projectile = GeometricPrimitive::CreateCube(m_d3dContext.Get(), 5.f);
+			bool ar = true;
+			bool ar2 = false;
+			bool ar3;
+			ar2 = ar;
+
+			
+			Shoot(ar,ar2);
+			
+		}
+		m_bullet = Matrix::CreateTranslation(-Vector3::Forward * 2) *Matrix::CreateRotationY(m_ship._42)  *m_bullet;
+		m_bullet2 = Matrix::CreateTranslation(-Vector3::Forward ) *Matrix::CreateRotationY(m_ship._42)  *m_bullet2;
+		
+		
 		// star rotation around Y axis
 		m_planetWorld *= Matrix::CreateRotationY(.001f);
 	
@@ -223,19 +227,15 @@ void Game::Render()
     Clear();
 
     // TODO: Add your rendering code here.
-	
 	m_effect->SetWorld(m_skybox);
 	m_shape->Draw(m_world,m_view,m_proj,Colors::White,m_texture.Get());
 	m_cubeMap->Draw(m_effect.get(), m_inputLayout.Get());
 	m_planet->Draw(m_planetWorld, m_view, m_proj,Colors::White,m_texture2.Get());
+	
 	m_starship->Draw(m_d3dContext.Get(), *m_states, m_ship, m_view, m_proj);
-	if (shoot)
-	{
-		for (int i = 0; i < 10; i++)
-		{
-			m_projectile[i]->Draw(m_bullet[i], m_view, m_proj, Colors::Red);	 
-		}
-	}
+	m_projectile->Draw(m_bullet, m_view, m_proj, Colors::Red);
+	m_projectile2->Draw(m_bullet2 , m_view, m_proj, Colors::Green);
+
 	
 	// Draws text
 	std::wstring output = std::wstring(L" X: ")+ std::to_wstring(a) +std::wstring(L"\n Z: ") + std::to_wstring(b);
@@ -287,30 +287,20 @@ bool Game::Menu(bool menuAndPause, bool contbtn, bool newgamebtn, bool exitbtn)
 	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"newGame.jpg", nullptr, m_btnNewGame.ReleaseAndGetAddressOf()));
 	if (m_btnExit == nullptr)
 	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"exit.jpg", nullptr, m_btnExit.ReleaseAndGetAddressOf()));
-
+	
 	return menu;
 }
-bool Game::Shoot(bool test)
+bool Game::Shoot(bool test,bool test2)
 {
-	shoot = test;
+	shoot1 = test;
+	shoot2 = test2;
+	if (shoot1)
+		m_bullet = Matrix::CreateRotationY(m_ship._42)* m_ship;
+	if (shoot2)
+		m_bullet2 = Matrix::CreateRotationY(m_ship._42)* m_ship;
 	
-		if (!shoot)
-		{
-			m_bulletPos = m_shipPos;
-			for (int i = 0; i < 10; i++){
-				m_bullet[i] = Matrix::CreateRotationY(m_ship._42) * m_ship;
-			}
-		}
-		else
-		{
-			m_bulletPos = m_shipPos;
-			for (int i = 0; i < 10; i++){
-			m_bullet[i] = Matrix::CreateTranslation(-Vector3::Forward *i)*Matrix::CreateRotationY(0.f) * m_bullet[i];
-			//m_bullet *= Matrix::CreateTranslation(-Vector3::Forward);
-			}
-		}
-	
-		return true;
+		
+		return draw;
 }
 // Helper method to clear the back buffers.
 void Game::Clear()
@@ -471,13 +461,16 @@ void Game::CreateDevice()
     // TODO: Initialize device dependent objects here (independent of window 
 	m_states = std::make_unique<CommonStates>(m_d3dDevice.Get());
 	m_fxFactory = std::make_unique<EffectFactory>(m_d3dDevice.Get());
+
 	
 	// ship model
 	m_starship = Model::CreateFromCMO(m_d3dDevice.Get(), L"droidfighter.cmo", *m_fxFactory);
 	// shooting projectile
-	for (int i = 0; i < 10; i++){
-		m_projectile[i] = GeometricPrimitive::CreateCube(m_d3dContext.Get(), 3.5f);
-	}
+	m_projectile = GeometricPrimitive::CreateCube(m_d3dContext.Get(), 2.f);
+	m_projectile2 = GeometricPrimitive::CreateCube(m_d3dContext.Get(), 2.f);
+
+	//std::fill(m_projectiles.begin(), m_projectiles.end(), GeometricPrimitive::CreateCube(m_d3dContext.Get(), 2.f));
+	
 	//center planet
 	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"earth.bmp", nullptr, m_texture2.ReleaseAndGetAddressOf()));
 	m_planet = GeometricPrimitive::CreateSphere(m_d3dContext.Get());
@@ -505,14 +498,14 @@ void Game::CreateDevice()
 
 	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"spaceTexture.jpg", nullptr, m_cMapTexture.ReleaseAndGetAddressOf()));
 	m_effect->SetTexture(m_cMapTexture.Get());
-
+	
 	m_world = Matrix::Identity;
 	m_planetWorld = Matrix::Identity;
 	m_skybox = Matrix::Identity;
 	m_ship = Matrix::Identity;
-	for (int i = 0; i < 10; i++){
-		m_bullet[i] = Matrix::Identity;
-	}
+	m_bullet = Matrix::Identity;
+	m_bullet2 = Matrix::Identity;
+
 	m_ship = Matrix::CreateScale(Vector3(1.2f, 1.2f, 1.2f));
 	m_planetWorld = Matrix::CreateScale(Vector3(9.f, 9.f, 9.f));
 	m_world = Matrix::CreateScale(Vector3(4.f, 4.f, 4.f));
