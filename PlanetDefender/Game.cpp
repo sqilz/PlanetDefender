@@ -1,13 +1,21 @@
 //
 // Game.cpp
 //
-
 #include "pch.h"
 #include "Game.h"
-#include "Bullet.h"
+#include "Enemy.h"
+#include "Ship.h"
+#include "Planets.h"
+#include "Skybox.h"
+
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
 using Microsoft::WRL::ComPtr;
+
+std::unique_ptr<Enemy> AlienShip(new Enemy);
+std::unique_ptr<Ship> Starship(new Ship);
+std::unique_ptr<Planets> Planet(new Planets);
+std::unique_ptr<Skybox> skybox(new Skybox);
 
 Game::Game() :
     m_window(0),
@@ -29,20 +37,20 @@ Game::~Game()
 // Initialize the Direct3D resources required to run.
 void Game::Initialize(HWND window, int width, int height)
 {
-    m_window = window;
-    m_outputWidth = std::max(width, 1);
-    m_outputHeight = std::max(height, 1);
+	m_window = window;
+	m_outputWidth = std::max(width, 1);
+	m_outputHeight = std::max(height, 1);
+
+	CreateDevice();
 	
-    CreateDevice();
+	CreateResources();
 
-    CreateResources();
+	// TODO: Change the timer settings if you want something other than the default variable timestep mode.
+	// e.g. for 60 FPS fixed timestep update logic , call:
 
-    // TODO: Change the timer settings if you want something other than the default variable timestep mode.
-    // e.g. for 60 FPS fixed timestep update logic , call:
-    
-    m_timer.SetFixedTimeStep(true);
-    m_timer.SetTargetElapsedSeconds(1.0 / 60);
-    
+	m_timer.SetFixedTimeStep(true);
+	m_timer.SetTargetElapsedSeconds(1.0 / 60);
+
 	AUDIO_ENGINE_FLAGS eflags = AudioEngine_Default;
 #ifdef _DEBUG
 	eflags = eflags | AudioEngine_Debug;
@@ -58,9 +66,9 @@ void Game::Initialize(HWND window, int width, int height)
 	m_keyboard = std::make_unique<Keyboard>();
 	m_mouse = std::make_unique<Mouse>();
 	m_mouse->SetWindow(window);
-	m_world._41 = -20.f;
-	m_world._43 = -20.f;
-	
+	m_planetWorld[1]._41 = -20.f;
+	m_planetWorld[1]._43 = -20.f;
+
 	menuOn = true;
 	newgamebtnHover = true;
 	exitbtnHover = true;
@@ -71,6 +79,23 @@ void Game::Initialize(HWND window, int width, int height)
 	m_bullet._41 = m_ship._41;
 	m_bullet._42 = m_ship._42;
 	m_bullet._43 = m_ship._43;
+	
+	std::random_device rd;
+	m_random = std::make_unique<std::mt19937>(rd());
+	
+	for (int i = 0; i < 100; i++){
+
+		std::uniform_real_distribution<float> dist(-30.f, 30.f);
+		enemyPosX = dist(*m_random);
+		enemyPosZ= dist(*m_random);
+
+		m_enemy[i]._41 = enemyPosX;
+		m_enemy[i]._43 = enemyPosZ;
+		//m_enemy[i] = Matrix::CreateTranslation(Vector3(explodeDelay*i,0.f,explodeDelay*i));
+	}
+	
+	m_planetPos[0] = Vector3(m_planetWorld[1]._41, 0.f, m_planetWorld[1]._43);
+	
 }
 
 // Executes the basic game loop.
@@ -86,7 +111,6 @@ void Game::Tick()
 // Updates the world.
 void Game::Update(DX::StepTimer const& timer)
 {
-
     float elapsedTime = float(timer.GetElapsedSeconds());
 
     // TODO: Add your game logic here.
@@ -154,37 +178,37 @@ void Game::Update(DX::StepTimer const& timer)
 			
 		if (kb.S)
 			m_ship *= Matrix::CreateTranslation(Vector3(0.0f, .0f, 0.2f));
-		// shooting
-
 		
-		if (kb.Space){
-			//m_projectile = GeometricPrimitive::CreateCube(m_d3dContext.Get(), 5.f);
-			bool ar = true;
-			bool ar2 = false;
-			bool ar3;
-			ar2 = ar;
-
-			
-			Shoot(ar,ar2);
-			
+		// shooting
+		if (kb.Space)
+		{
+			if (6 - timer.GetElapsedSeconds())
+			{
+				
+				Shoot(true, false);
+			}
+			Shoot(false, true);
+					
 		}
 		m_bullet = Matrix::CreateTranslation(-Vector3::Forward * 2) *Matrix::CreateRotationY(m_ship._42)  *m_bullet;
 		m_bullet2 = Matrix::CreateTranslation(-Vector3::Forward ) *Matrix::CreateRotationY(m_ship._42)  *m_bullet2;
 		
 		
 		// star rotation around Y axis
-		m_planetWorld *= Matrix::CreateRotationY(.001f);
+		m_planetWorld[0] *= Matrix::CreateRotationY(.001f);
 	
 		// planet orbiting
-		m_world *= Matrix::CreateRotationY(sinf(2.f*XM_PI / 360.f)) * Matrix::CreateTranslation(Vector3(.1f, .0f, .1f));
+		m_planetWorld[1] *= Matrix::CreateRotationY(sinf(2.f*XM_PI / 360.f)) * Matrix::CreateTranslation(Vector3(.1f, .0f, .1f));
 		
 		// makes the background "space" texture rotate slowly
 		m_skybox *= Matrix::CreateRotationY(.001f);
 		m_skybox *= Matrix::CreateRotationX(.001f);
 		m_skybox *= Matrix::CreateRotationZ(.001f);
 		
-		a = m_world._41;
-		b = m_world._43;
+		a = m_planetWorld[1]._41;
+		b = m_planetWorld[1]._43;
+
+		
 	}
 	// makes the camera look at the spaceship
 	m_view = Matrix::CreateLookAt(Vector3(m_shipPos.x + 0.f, m_shipPos.y + 50.f, m_shipPos.z + 50.f), Vector3(m_ship._41, m_ship._42, m_ship._43), Vector3::Up);
@@ -206,15 +230,9 @@ void Game::Update(DX::StepTimer const& timer)
 			m_retryAudio = true;
 		}
 	}
-	/*explodeDelay -= elapsedTime;
-	if (explodeDelay < 0.f)
-	{
-		m_bgAudio->Play();
-		
-		std::uniform_real_distribution<float> dist(1.f, 10.f);
-		
-	}*/
-
+	for (int i = 0; i < 100; i++){
+	//	m_enemy[i] = Matrix::CreateTranslation(m_planetPos[0]);
+	}
 }
 // Draws the scene.
 void Game::Render()
@@ -224,18 +242,18 @@ void Game::Render()
     {
         return;
     }
-    Clear();
+	Clear(); 
 
     // TODO: Add your rendering code here.
-	m_effect->SetWorld(m_skybox);
-	m_shape->Draw(m_world,m_view,m_proj,Colors::White,m_texture.Get());
-	m_cubeMap->Draw(m_effect.get(), m_inputLayout.Get());
-	m_planet->Draw(m_planetWorld, m_view, m_proj,Colors::White,m_texture2.Get());
+	skybox->Draw(m_skybox);
 	
-	m_starship->Draw(m_d3dContext.Get(), *m_states, m_ship, m_view, m_proj);
+	Planet->Draw(m_d3dContext.Get(), m_planetWorld[0], m_planetWorld[1], m_view, m_proj);
+	AlienShip->Draw(m_d3dContext.Get(), m_enemy[0], m_view, m_proj);
+	Starship->Draw(m_d3dContext.Get(), m_ship, m_view, m_proj);
+
+	
 	m_projectile->Draw(m_bullet, m_view, m_proj, Colors::Red);
 	m_projectile2->Draw(m_bullet2 , m_view, m_proj, Colors::Green);
-
 	
 	// Draws text
 	std::wstring output = std::wstring(L" X: ")+ std::to_wstring(a) +std::wstring(L"\n Z: ") + std::to_wstring(b);
@@ -298,7 +316,6 @@ bool Game::Shoot(bool test,bool test2)
 		m_bullet = Matrix::CreateRotationY(m_ship._42)* m_ship;
 	if (shoot2)
 		m_bullet2 = Matrix::CreateRotationY(m_ship._42)* m_ship;
-	
 		
 		return draw;
 }
@@ -461,58 +478,30 @@ void Game::CreateDevice()
     // TODO: Initialize device dependent objects here (independent of window 
 	m_states = std::make_unique<CommonStates>(m_d3dDevice.Get());
 	m_fxFactory = std::make_unique<EffectFactory>(m_d3dDevice.Get());
-
-	
-	// ship model
-	m_starship = Model::CreateFromCMO(m_d3dDevice.Get(), L"droidfighter.cmo", *m_fxFactory);
-	// shooting projectile
+		
 	m_projectile = GeometricPrimitive::CreateCube(m_d3dContext.Get(), 2.f);
 	m_projectile2 = GeometricPrimitive::CreateCube(m_d3dContext.Get(), 2.f);
-
-	//std::fill(m_projectiles.begin(), m_projectiles.end(), GeometricPrimitive::CreateCube(m_d3dContext.Get(), 2.f));
 	
-	//center planet
-	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"earth.bmp", nullptr, m_texture2.ReleaseAndGetAddressOf()));
-	m_planet = GeometricPrimitive::CreateSphere(m_d3dContext.Get());
-	//orbiting planet
-	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"earth.bmp", nullptr, m_texture.ReleaseAndGetAddressOf()));
-	m_shape = GeometricPrimitive::CreateSphere(m_d3dContext.Get());
-	
-	// SKYBOX
-	// skybox light fix - when loading, default lights were applied to the texture
-	m_effect = std::make_unique<BasicEffect>(m_d3dDevice.Get());
-	m_effect->SetTextureEnabled(true);
-	m_effect->SetPerPixelLighting(true);
-	m_effect->SetLightingEnabled(true);
-	m_effect->SetLightEnabled(0, true);
-	m_effect->SetLightDiffuseColor(0, Colors::White);
-	m_effect->SetLightDirection(0, -Vector3::UnitZ);
-	m_effect->SetFogEnabled(true);
-	m_effect->SetFogStart(6);
-	m_effect->SetFogEnd(1200);
-	m_effect->SetFogColor(Colors::Black);
-
-	m_cubeMap = GeometricPrimitive::CreateSphere(m_d3dContext.Get(),300.f,16,false,true);
-	m_cubeMap->CreateInputLayout(m_effect.get(),
-		m_inputLayout.ReleaseAndGetAddressOf());
-
-	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"spaceTexture.jpg", nullptr, m_cMapTexture.ReleaseAndGetAddressOf()));
-	m_effect->SetTexture(m_cMapTexture.Get());
-	
-	m_world = Matrix::Identity;
-	m_planetWorld = Matrix::Identity;
+	m_planetWorld[0] = Matrix::Identity;
+	m_planetWorld[1] = Matrix::Identity;
 	m_skybox = Matrix::Identity;
 	m_ship = Matrix::Identity;
 	m_bullet = Matrix::Identity;
 	m_bullet2 = Matrix::Identity;
 
 	m_ship = Matrix::CreateScale(Vector3(1.2f, 1.2f, 1.2f));
-	m_planetWorld = Matrix::CreateScale(Vector3(9.f, 9.f, 9.f));
-	m_world = Matrix::CreateScale(Vector3(4.f, 4.f, 4.f));
+	m_planetWorld[0] = Matrix::CreateScale(Vector3(15.f, 15.f, 15.f));
+	m_planetWorld[1] = Matrix::CreateScale(Vector3(4.f, 4.f, 4.f));
 	m_skybox = Matrix::CreateScale(Vector3(5.f, 5.f, 5.f));
 	
 	m_font = std::make_unique<SpriteFont>(m_d3dDevice.Get(), L"c.spritefont");
 	m_spriteBatch = std::make_unique<SpriteBatch>(m_d3dContext.Get());
+
+	// Creating models/texturing
+	AlienShip->CreateDevice(m_d3dDevice.Get());
+	Starship->CreateDevice(m_d3dDevice.Get());
+	Planet->CreateDevice(m_d3dDevice.Get(), m_d3dContext.Get());
+	skybox->CreateDevice(m_d3dDevice.Get(), m_d3dContext.Get());
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.
@@ -635,8 +624,7 @@ void Game::CreateResources()
 	
 	// FOV
 	m_proj = Matrix::CreatePerspectiveFieldOfView(XM_PI / 2.5f, float(backBufferWidth) / float(backBufferHeight),0.1f,1000.f);
-	m_effect->SetView(m_view);
-	m_effect->SetProjection(m_proj);
+	skybox->CreateResources(m_view, m_proj);
 
 	//font position
 	m_FontPos.x = backBufferWidth / 5.f;
@@ -673,20 +661,17 @@ void Game::OnDeviceLost()
 	
 	m_fxFactory.reset();
 	m_states.reset();
-	m_inputLayout.Reset();
+	
 
 	// textures
-	m_texture.Reset();
-	m_texture2.Reset();
-	m_cMapTexture.Reset();
+
+	
 	m_background.Reset();
 	// geometry & font
-	m_cubeMap.reset();
-	m_shape.reset();
-	m_planet.reset();
+	
 	m_font.reset();
 	m_starship.reset();
-
+	
 	CreateDevice();
 
     CreateResources();

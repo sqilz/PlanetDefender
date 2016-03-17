@@ -71,15 +71,17 @@ protected:
 	//pointer to keyboard/mouse interface
 	std::unique_ptr<DirectX::Keyboard> m_keyboard;
 	std::unique_ptr<DirectX::Mouse> m_mouse;
-	
-	DirectX::SimpleMath::Matrix m_planetWorld;
-	DirectX::SimpleMath::Matrix m_world;
+
+	DirectX::SimpleMath::Matrix m_planetWorld[2];
 	DirectX::SimpleMath::Matrix m_ship;
 	DirectX::SimpleMath::Matrix m_bullet;
 	DirectX::SimpleMath::Matrix m_bullet2;
 	DirectX::SimpleMath::Matrix m_skybox;
 	DirectX::SimpleMath::Matrix m_view;
 	DirectX::SimpleMath::Matrix m_proj;
+	DirectX::SimpleMath::Matrix m_enemy[100];
+
+	DirectX::SimpleMath::Vector3 m_planetPos[9];
 
 	//font
 	DirectX::SimpleMath::Vector2 m_FontPos;
@@ -88,23 +90,21 @@ protected:
 	
 	// Geometry 
 	std::unique_ptr<DirectX::CommonStates> m_states;
-	std::unique_ptr<DirectX::GeometricPrimitive> m_shape;
-	std::unique_ptr<DirectX::GeometricPrimitive> m_cubeMap;
-	std::unique_ptr<DirectX::GeometricPrimitive> m_planet;
+
 	
-	//std::unique_ptr<DirectX::GeometricPrimitive> m_projectile;
 	std::unique_ptr<DirectX::GeometricPrimitive> m_projectile;
 	std::unique_ptr<DirectX::GeometricPrimitive> m_projectile2;
-	//std::vector<DirectX::GeometricPrimitive> m_projectiles = std::vector<DirectX::GeometricPrimitive>(10);
-	
+
+	//std::unique_ptr<DirectX::Model> m_alienShip[100];
 	std::unique_ptr<DirectX::Model> m_starship;
+
 	bool shoot1,shoot2;
 	bool draw;
 	DirectX::SimpleMath::Vector3 m_shipPos, m_bulletPos;
 
 	std::unique_ptr<DirectX::IEffectFactory> m_fxFactory;
-	std::unique_ptr<DirectX::BasicEffect> m_effect;
-	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
+	
+	
 	std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionColor>> m_batch;
 	
 	float a,b;
@@ -121,14 +121,16 @@ protected:
 	bool continuebtn;
 	bool newgamebtnHover, exitbtnHover;
 
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture2;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_cMapTexture;
+	
+
 
 	std::unique_ptr<DirectX::AudioEngine> m_audio;
 	bool m_retryAudio;
+	float explodeDelay;
 	std::unique_ptr<DirectX::SoundEffect> m_bgAudio;
 	std::unique_ptr<DirectX::SoundEffectInstance> m_bgAudioLoop;
 
-	float explodeDelay;
+	std::unique_ptr<std::mt19937> m_random;
+	float enemyPosX,enemyPosZ;
+	std::vector<float> positionRand = std::vector<float>(100);
 };

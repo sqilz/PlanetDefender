@@ -23,7 +23,19 @@
     <ClInclude Include="StepTimer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Bullet.h">
+    <ClInclude Include="Enemy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Ship.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Planets.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Models.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Skybox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -37,7 +49,19 @@
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Bullet.cpp">
+    <ClCompile Include="Enemy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Ship.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Planets.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Models.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Skybox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -47,6 +71,9 @@
       <Filter>Resources</Filter>
     </None>
     <None Include="old_boat.cmo">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="ufo.cmo">
       <Filter>Resources</Filter>
     </None>
   </ItemGroup>
@@ -70,6 +97,9 @@
       <Filter>Resources</Filter>
     </Image>
     <Image Include="spaceTexture.jpg">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="sunTex.jpg">
       <Filter>Resources</Filter>
     </Image>
   </ItemGroup>
