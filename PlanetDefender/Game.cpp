@@ -7,6 +7,7 @@
 #include "Ship.h"
 #include "Planets.h"
 #include "Skybox.h"
+#include "Font.h"
 
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
@@ -16,6 +17,7 @@ std::unique_ptr<Enemy> AlienShip(new Enemy);
 std::unique_ptr<Ship> Starship(new Ship);
 std::unique_ptr<Planets> Planet(new Planets);
 std::unique_ptr<Skybox> skybox(new Skybox);
+
 
 Game::Game() :
     m_window(0),
