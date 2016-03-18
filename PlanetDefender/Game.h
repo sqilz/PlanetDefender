@@ -75,11 +75,10 @@ protected:
 	DirectX::SimpleMath::Matrix m_planetWorld[2];
 	DirectX::SimpleMath::Matrix m_ship;
 	DirectX::SimpleMath::Matrix m_bullet;
-	DirectX::SimpleMath::Matrix m_bullet2;
 	DirectX::SimpleMath::Matrix m_skybox;
 	DirectX::SimpleMath::Matrix m_view;
 	DirectX::SimpleMath::Matrix m_proj;
-	DirectX::SimpleMath::Matrix m_enemy[100];
+	DirectX::SimpleMath::Matrix m_enemy[200];
 
 	DirectX::SimpleMath::Vector3 m_planetPos[9];
 
@@ -88,26 +87,13 @@ protected:
 	std::unique_ptr<DirectX::SpriteFont> m_font;
 	std::unique_ptr<DirectX::SpriteBatch> m_spriteBatch;
 	
-	// Geometry 
-	std::unique_ptr<DirectX::CommonStates> m_states;
-
-	
-	std::unique_ptr<DirectX::GeometricPrimitive> m_projectile;
-	std::unique_ptr<DirectX::GeometricPrimitive> m_projectile2;
-
-	//std::unique_ptr<DirectX::Model> m_alienShip[100];
-	std::unique_ptr<DirectX::Model> m_starship;
-
 	bool shoot1,shoot2;
 	bool draw;
 	DirectX::SimpleMath::Vector3 m_shipPos, m_bulletPos;
-
-	std::unique_ptr<DirectX::IEffectFactory> m_fxFactory;
 	
 	
-	std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionColor>> m_batch;
-	
-	float a,b;
+	int score;
+	char HighScore[2];
 	float speed, acceleration;
 	// Menu
 	RECT m_menuBackground, m_newGame, m_exit;
@@ -120,10 +106,7 @@ protected:
 	bool menuOn;
 	bool continuebtn;
 	bool newgamebtnHover, exitbtnHover;
-
 	
-
-
 	std::unique_ptr<DirectX::AudioEngine> m_audio;
 	bool m_retryAudio;
 	float explodeDelay;

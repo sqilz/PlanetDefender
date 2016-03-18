@@ -8,16 +8,28 @@
 #include "Planets.h"
 #include "Skybox.h"
 #include "Font.h"
+#include "Shooting.h"
+#include "Audio.h"
 
+#include <fstream>
+#include <codecvt>
+
+
+using namespace std;
+#define MODELS_DRAWN 20
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
 using Microsoft::WRL::ComPtr;
 
-std::unique_ptr<Enemy> AlienShip(new Enemy);
-std::unique_ptr<Ship> Starship(new Ship);
-std::unique_ptr<Planets> Planet(new Planets);
-std::unique_ptr<Skybox> skybox(new Skybox);
 
+//C++14 smart pointers
+auto AlienShip = std::make_unique<Enemy[]>(MODELS_DRAWN);
+auto Starship = std::make_unique<Ship>();
+auto Planet = std::make_unique<Planets>();
+auto skybox = std::make_unique<Skybox>();
+auto Text = std::make_unique<Font>();
+auto Bullet = std::make_unique<Shooting>();
+auto Sound = std::make_unique<Audio>();
 
 Game::Game() :
     m_window(0),
@@ -28,12 +40,6 @@ Game::Game() :
 }
 Game::~Game()
 {
-	if (m_audio)
-	{
-		m_audio->Suspend();
-	}
-	m_bgAudioLoop.reset();
-	
 		
 }
 // Initialize the Direct3D resources required to run.
@@ -44,30 +50,22 @@ void Game::Initialize(HWND window, int width, int height)
 	m_outputHeight = std::max(height, 1);
 
 	CreateDevice();
-	
 	CreateResources();
 
 	// TODO: Change the timer settings if you want something other than the default variable timestep mode.
 	// e.g. for 60 FPS fixed timestep update logic , call:
 
-	m_timer.SetFixedTimeStep(true);
-	m_timer.SetTargetElapsedSeconds(1.0 / 60);
+	//m_timer.SetFixedTimeStep(true);
+	//m_timer.SetTargetElapsedSeconds(1.0 / 120);
 
-	AUDIO_ENGINE_FLAGS eflags = AudioEngine_Default;
-#ifdef _DEBUG
-	eflags = eflags | AudioEngine_Debug;
-#endif
-	m_audio = std::make_unique<AudioEngine>(eflags);
-	m_retryAudio = false;
 
-	m_bgAudio = std::make_unique<SoundEffect>(m_audio.get(), L"sandstorm.wav");
-	m_bgAudioLoop = m_bgAudio->CreateInstance();
-	m_bgAudioLoop->Play(true);
-	explodeDelay = 2.f;
+	////////////
 
+	// pointer to keyboard and mouse interface
 	m_keyboard = std::make_unique<Keyboard>();
 	m_mouse = std::make_unique<Mouse>();
 	m_mouse->SetWindow(window);
+
 	m_planetWorld[1]._41 = -20.f;
 	m_planetWorld[1]._43 = -20.f;
 
@@ -75,29 +73,23 @@ void Game::Initialize(HWND window, int width, int height)
 	newgamebtnHover = true;
 	exitbtnHover = true;
 	speed = 0.6f;
-	//m_bullet = Matrix::CreateRotationY(m_ship._42) * m_ship;
+	
 
 	m_ship._43 = 30.f; // spawn position on Z changed so ship doesnt spawn inside a planet
-	m_bullet._41 = m_ship._41;
-	m_bullet._42 = m_ship._42;
-	m_bullet._43 = m_ship._43;
-	
+
 	std::random_device rd;
 	m_random = std::make_unique<std::mt19937>(rd());
 	
-	for (int i = 0; i < 100; i++){
-
-		std::uniform_real_distribution<float> dist(-30.f, 30.f);
+	for (int i = 0; i < MODELS_DRAWN; i++)
+	{
+		std::uniform_real_distribution<float> dist(-80.f, 80.f);
 		enemyPosX = dist(*m_random);
 		enemyPosZ= dist(*m_random);
-
 		m_enemy[i]._41 = enemyPosX;
 		m_enemy[i]._43 = enemyPosZ;
-		//m_enemy[i] = Matrix::CreateTranslation(Vector3(explodeDelay*i,0.f,explodeDelay*i));
-	}
-	
-	m_planetPos[0] = Vector3(m_planetWorld[1]._41, 0.f, m_planetWorld[1]._43);
-	
+	}	
+	score = 0;
+	Sound->AudioInit();
 }
 
 // Executes the basic game loop.
@@ -113,6 +105,7 @@ void Game::Tick()
 // Updates the world.
 void Game::Update(DX::StepTimer const& timer)
 {
+	m_planetPos[1] = Vector3(m_planetWorld[1]._41, 0.f, m_planetWorld[1]._43);
     float elapsedTime = float(timer.GetElapsedSeconds());
 
     // TODO: Add your game logic here.
@@ -125,7 +118,7 @@ void Game::Update(DX::StepTimer const& timer)
 	auto mouse = m_mouse->GetState();
 	
 	m_shipPos = Vector3(m_ship._41, m_ship._42, m_ship._43);
-	m_bulletPos = Vector3(m_bullet._41 + float(1), m_bullet._42, m_bullet._43);
+	//m_planetPos = 
 
 	if (kb.F1)
 		PostQuitMessage(0);
@@ -170,10 +163,10 @@ void Game::Update(DX::StepTimer const& timer)
 	if (!isPaused)
 	{
 		if (kb.A)
-			m_ship = Matrix::CreateTranslation(-Vector3::Forward * speed) * Matrix::CreateRotationY(.1f) * m_ship;
+			m_ship = Matrix::CreateTranslation(-Vector3::Forward * speed) * Matrix::CreateRotationY(.05f) * m_ship;
 				
 		if (kb.D)
-			m_ship = Matrix::CreateTranslation(-Vector3::Forward * speed) * Matrix::CreateRotationY(-.1f) * m_ship;
+			m_ship = Matrix::CreateTranslation(-Vector3::Forward * speed) * Matrix::CreateRotationY(-.05f) * m_ship;
 
 		if (kb.W)
 			m_ship = Matrix::CreateTranslation(-Vector3::Forward * speed) * Matrix::CreateRotationY(0.f) * m_ship;;
@@ -182,23 +175,40 @@ void Game::Update(DX::StepTimer const& timer)
 			m_ship *= Matrix::CreateTranslation(Vector3(0.0f, .0f, 0.2f));
 		
 		// shooting
-		if (kb.Space)
+		if (kb.IsKeyDown(Keyboard::Keys::Space))
 		{
-			if (6 - timer.GetElapsedSeconds())
-			{
-				
-				Shoot(true, false);
-			}
-			Shoot(false, true);
-					
+			m_bullet = Matrix::CreateRotationY(0)* m_ship;
 		}
-		m_bullet = Matrix::CreateTranslation(-Vector3::Forward * 2) *Matrix::CreateRotationY(m_ship._42)  *m_bullet;
-		m_bullet2 = Matrix::CreateTranslation(-Vector3::Forward ) *Matrix::CreateRotationY(m_ship._42)  *m_bullet2;
+		for (int i = 0; i < MODELS_DRAWN; i++)
+		{
+			bool hit;
+			float xDiff = (m_enemy[i]._41 - m_bullet._41);
+			float zDiff = (m_enemy[i]._43 - m_bullet._43);
+			float xDiffSqr = (xDiff * xDiff);
+			float zDiffSqr = (zDiff * zDiff);
+			float total = (xDiffSqr + zDiffSqr);
+			float DiffDistance = (sqrt(total));
+			if (DiffDistance < 3.f)
+			{
+				hit = true;
+				AlienShip[i].~Enemy();
+				
+				if(hit) score++;
+				hit = false;
+			}
+		}
+		std::ofstream scoreFile;
+		scoreFile.open("HighScore.txt");
+		scoreFile << score;
+		scoreFile.close();
+
+	
 		
 		
+		m_enemy[2] += Matrix::CreateTranslation(Vector3::Lerp(Vector3::Zero,m_planetPos[1],6.f*1.1f));
+				
 		// star rotation around Y axis
 		m_planetWorld[0] *= Matrix::CreateRotationY(.001f);
-	
 		// planet orbiting
 		m_planetWorld[1] *= Matrix::CreateRotationY(sinf(2.f*XM_PI / 360.f)) * Matrix::CreateTranslation(Vector3(.1f, .0f, .1f));
 		
@@ -207,34 +217,12 @@ void Game::Update(DX::StepTimer const& timer)
 		m_skybox *= Matrix::CreateRotationX(.001f);
 		m_skybox *= Matrix::CreateRotationZ(.001f);
 		
-		a = m_planetWorld[1]._41;
-		b = m_planetWorld[1]._43;
-
 		
+	//b = HighScore;	
 	}
 	// makes the camera look at the spaceship
 	m_view = Matrix::CreateLookAt(Vector3(m_shipPos.x + 0.f, m_shipPos.y + 50.f, m_shipPos.z + 50.f), Vector3(m_ship._41, m_ship._42, m_ship._43), Vector3::Up);
-
-	if (m_retryAudio)
-	{
-		m_retryAudio = false;
-		if (m_audio->Reset())
-		{
-			// TODO: restart any looped sounds here
-			if (m_bgAudioLoop)
-				m_bgAudioLoop->Play(true);
-		}
-	}
-	else if (!m_audio->Update())
-	{
-		if (m_audio->IsCriticalError())
-		{
-			m_retryAudio = true;
-		}
-	}
-	for (int i = 0; i < 100; i++){
-	//	m_enemy[i] = Matrix::CreateTranslation(m_planetPos[0]);
-	}
+	Sound->AudioUpdate();
 }
 // Draws the scene.
 void Game::Render()
@@ -250,17 +238,29 @@ void Game::Render()
 	skybox->Draw(m_skybox);
 	
 	Planet->Draw(m_d3dContext.Get(), m_planetWorld[0], m_planetWorld[1], m_view, m_proj);
-	AlienShip->Draw(m_d3dContext.Get(), m_enemy[0], m_view, m_proj);
-	Starship->Draw(m_d3dContext.Get(), m_ship, m_view, m_proj);
 
-	
-	m_projectile->Draw(m_bullet, m_view, m_proj, Colors::Red);
-	m_projectile2->Draw(m_bullet2 , m_view, m_proj, Colors::Green);
-	
+	int i = 0;
+	for (i; i < MODELS_DRAWN; i++)
+	{
+		AlienShip[i].Draw(m_d3dContext.Get(), m_enemy[i], m_view, m_proj);
+	}
+
+	Starship->Draw(m_d3dContext.Get(), m_ship, m_view, m_proj);
+	Bullet->Draw(m_bullet, m_view, m_proj);
+	m_bullet = Matrix::CreateTranslation(-Vector3::Forward) *m_bullet;
+			
 	// Draws text
-	std::wstring output = std::wstring(L" X: ")+ std::to_wstring(a) +std::wstring(L"\n Z: ") + std::to_wstring(b);
+
+	std::locale ulocale(std::locale(), new codecvt_utf8<wchar_t>);
+	std::wifstream ifs("HighScore.txt");
+	ifs.imbue(ulocale);
+	std::wstring ws;
+	std::getline(ifs, ws);
+
+
+	std::wstring output = std::wstring(L" Score: ")+ std::to_wstring(score) +std::wstring(L"\n Hihh Score: ") + ws;
 	m_spriteBatch->Begin();
-	Vector2 origin = m_font->MeasureString(output.c_str()) / 2.f;
+	Vector2 origin = m_font->MeasureString(output.c_str()) / 4.f;
 	m_font->DrawString(m_spriteBatch.get(), output.c_str(),	m_FontPos, Colors::White, 0.f, origin);
 	m_spriteBatch->End();
 	
@@ -268,10 +268,8 @@ void Game::Render()
 	if (menu)
 	{
 		m_spriteBatch->Begin();
-
 		// background texture drawing
 		m_spriteBatch->Draw(m_background.Get(), m_menuBackground);
-
 		// new game/continue + color change
 		if (newgamebtnHover)
 		m_spriteBatch->Draw(m_btnNewGame.Get(), m_newGame);
@@ -296,11 +294,11 @@ bool Game::Menu(bool menuAndPause, bool contbtn, bool newgamebtn, bool exitbtn)
 	isPaused = menuAndPause;
 	newgamebtnHover = newgamebtn;
 	exitbtnHover = exitbtn;
-
+		
 	// main menu textures for bg and buttons
 	continuebtn = contbtn;
 	if (continuebtn == true)
-		DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"continue.jpg", nullptr, m_btnNewGame.ReleaseAndGetAddressOf()));
+	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"continue.jpg", nullptr, m_btnNewGame.ReleaseAndGetAddressOf()));
 	if (m_background.Get() == nullptr)
 	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"menubackground.jpg", nullptr, m_background.ReleaseAndGetAddressOf()));
 	if (m_btnNewGame == nullptr)
@@ -310,24 +308,13 @@ bool Game::Menu(bool menuAndPause, bool contbtn, bool newgamebtn, bool exitbtn)
 	
 	return menu;
 }
-bool Game::Shoot(bool test,bool test2)
-{
-	shoot1 = test;
-	shoot2 = test2;
-	if (shoot1)
-		m_bullet = Matrix::CreateRotationY(m_ship._42)* m_ship;
-	if (shoot2)
-		m_bullet2 = Matrix::CreateRotationY(m_ship._42)* m_ship;
-		
-		return draw;
-}
+
 // Helper method to clear the back buffers.
 void Game::Clear()
 {
     // Clear the views
     m_d3dContext->ClearRenderTargetView(m_renderTargetView.Get(), Colors::CornflowerBlue);
     m_d3dContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
     m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
 
     // Set the viewport.
@@ -368,7 +355,7 @@ void Game::OnDeactivated()
 void Game::OnSuspending()
 {
     // TODO: Game is being power-suspended (or minimized).
-	m_audio->Suspend();
+	Sound->AudioSuspend();
 }
 
 void Game::OnResuming()
@@ -376,8 +363,7 @@ void Game::OnResuming()
     m_timer.ResetElapsedTime();
 
     // TODO: Game is being power-resumed (or returning from minimize).
-	m_audio->Resume();
-	explodeDelay = 2.f;
+	Sound->AudioResume();
 }
 
 void Game::OnWindowSizeChanged(int width, int height)
@@ -478,18 +464,15 @@ void Game::CreateDevice()
         (void)m_d3dContext.As(&m_d3dContext1);
 
     // TODO: Initialize device dependent objects here (independent of window 
-	m_states = std::make_unique<CommonStates>(m_d3dDevice.Get());
-	m_fxFactory = std::make_unique<EffectFactory>(m_d3dDevice.Get());
-		
-	m_projectile = GeometricPrimitive::CreateCube(m_d3dContext.Get(), 2.f);
-	m_projectile2 = GeometricPrimitive::CreateCube(m_d3dContext.Get(), 2.f);
+	
+	Bullet->CreateDevice(m_d3dContext.Get());
+	
 	
 	m_planetWorld[0] = Matrix::Identity;
 	m_planetWorld[1] = Matrix::Identity;
 	m_skybox = Matrix::Identity;
 	m_ship = Matrix::Identity;
-	m_bullet = Matrix::Identity;
-	m_bullet2 = Matrix::Identity;
+	
 
 	m_ship = Matrix::CreateScale(Vector3(1.2f, 1.2f, 1.2f));
 	m_planetWorld[0] = Matrix::CreateScale(Vector3(15.f, 15.f, 15.f));
@@ -500,7 +483,9 @@ void Game::CreateDevice()
 	m_spriteBatch = std::make_unique<SpriteBatch>(m_d3dContext.Get());
 
 	// Creating models/texturing
-	AlienShip->CreateDevice(m_d3dDevice.Get());
+	for (int i = 0; i < MODELS_DRAWN; i++){
+		AlienShip[i].CreateDevice(m_d3dDevice.Get());
+	}
 	Starship->CreateDevice(m_d3dDevice.Get());
 	Planet->CreateDevice(m_d3dDevice.Get(), m_d3dContext.Get());
 	skybox->CreateDevice(m_d3dDevice.Get(), m_d3dContext.Get());
@@ -661,18 +646,13 @@ void Game::OnDeviceLost()
     m_d3dDevice1.Reset();
     m_d3dDevice.Reset();
 	
-	m_fxFactory.reset();
-	m_states.reset();
-	
-
-	// textures
 
 	
 	m_background.Reset();
-	// geometry & font
+	
 	
 	m_font.reset();
-	m_starship.reset();
+
 	
 	CreateDevice();
 

@@ -11,15 +11,14 @@ Enemy::Enemy()
 {
 }
 
-
 Enemy::~Enemy()
 {	
-	
+	alien.reset();
 }
 
 void Enemy::Draw(ID3D11DeviceContext* deviceContext,Matrix world, Matrix view, Matrix proj)
 {
-	alien[0]->Draw(deviceContext, *m_states, world, view, proj);
+	alien->Draw(deviceContext, *m_states, world, view, proj);
 }
 
 void Enemy::CreateDevice(ID3D11Device * device)
@@ -27,6 +26,5 @@ void Enemy::CreateDevice(ID3D11Device * device)
 	m_states = std::make_unique<CommonStates>(device);
 	m_fxFactory = std::make_unique<EffectFactory>(device);
 
-	alien[0] = Model::CreateFromCMO(device, L"ufo.cmo", *m_fxFactory);
-	
+	alien = Model::CreateFromCMO(device, L"ufo.cmo", *m_fxFactory);
 }

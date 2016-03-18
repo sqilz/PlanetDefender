@@ -11,6 +11,8 @@ Planets::~Planets()
 {
 	m_starTex.Reset();
 	m_planetTex.Reset();
+	m_star.reset();
+	m_orbPlanet.reset();
 	OutputDebugStringW(L"Destructor in Planets");
 }
 void Planets::Draw(ID3D11DeviceContext* deviceContext, Matrix world, Matrix world2, Matrix view, Matrix proj)

@@ -9,6 +9,7 @@ Ship::Ship()
 
 Ship::~Ship()
 {
+	m_starship.reset();
 }
 
 void Ship::Draw(ID3D11DeviceContext* deviceContext, Matrix world, Matrix view, Matrix proj)
