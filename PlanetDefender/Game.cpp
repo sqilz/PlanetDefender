@@ -9,38 +9,39 @@
 #include "Skybox.h"
 #include "Font.h"
 #include "Shooting.h"
-#include "Audio.h"
-
+#include "AudioClass.h"
+#include "MainMenu.h"
 #include <fstream>
 #include <codecvt>
-
-
 using namespace std;
-#define MODELS_DRAWN 20
+
+//TODO: just create a variable
+#define MODELS_DRAWN 20 // I should not use this 
+
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
 using Microsoft::WRL::ComPtr;
 
 
-//C++14 smart pointers
+//C++14 smart pointers to classes
 auto AlienShip = std::make_unique<Enemy[]>(MODELS_DRAWN);
 auto Starship = std::make_unique<Ship>();
 auto Planet = std::make_unique<Planets>();
 auto skybox = std::make_unique<Skybox>();
 auto Text = std::make_unique<Font>();
 auto Bullet = std::make_unique<Shooting>();
-auto Sound = std::make_unique<Audio>();
+auto Sound = std::make_unique<AudioClass>();
+auto Menuu = std::make_unique<MainMenu>();
 
 Game::Game() :
     m_window(0),
 	m_outputWidth(1270),
     m_outputHeight(860),
-    m_featureLevel(D3D_FEATURE_LEVEL_11_1)
+    m_featureLevel(D3D_FEATURE_LEVEL_11_0)
 {
 }
 Game::~Game()
 {
-		
 }
 // Initialize the Direct3D resources required to run.
 void Game::Initialize(HWND window, int width, int height)
@@ -58,25 +59,18 @@ void Game::Initialize(HWND window, int width, int height)
 	//m_timer.SetFixedTimeStep(true);
 	//m_timer.SetTargetElapsedSeconds(1.0 / 120);
 
-
-	////////////
-
 	// pointer to keyboard and mouse interface
 	m_keyboard = std::make_unique<Keyboard>();
 	m_mouse = std::make_unique<Mouse>();
 	m_mouse->SetWindow(window);
 
-	m_planetWorld[1]._41 = -20.f;
-	m_planetWorld[1]._43 = -20.f;
-
-	menuOn = true;
-	newgamebtnHover = true;
-	exitbtnHover = true;
-	speed = 0.6f;
-	
-
+	m_planetWorld[1]._41 = -20.f;	// X 
+	m_planetWorld[1]._43 = -20.f;	// Y
 	m_ship._43 = 30.f; // spawn position on Z changed so ship doesnt spawn inside a planet
 
+	speed = 0.6f;
+	
+	// generating random enemy positions on game start
 	std::random_device rd;
 	m_random = std::make_unique<std::mt19937>(rd());
 	
@@ -89,6 +83,7 @@ void Game::Initialize(HWND window, int width, int height)
 		m_enemy[i]._43 = enemyPosZ;
 	}	
 	score = 0;
+	
 	Sound->AudioInit();
 }
 
@@ -105,63 +100,31 @@ void Game::Tick()
 // Updates the world.
 void Game::Update(DX::StepTimer const& timer)
 {
-	m_planetPos[1] = Vector3(m_planetWorld[1]._41, 0.f, m_planetWorld[1]._43);
+	m_planetPos[1] = Vector3(m_planetWorld[1]._41, 0.f, m_planetWorld[1]._43); // Vector updating the position of orbiting planet
     float elapsedTime = float(timer.GetElapsedSeconds());
 
     // TODO: Add your game logic here.
 	elapsedTime;
 	float time = float(timer.GetTotalSeconds());
-	
 	float newTime = time - elapsedTime;
+
 	// KEYBOARD AND MOUSE INITIALISATION 
 	auto kb = m_keyboard->GetState();
 	auto mouse = m_mouse->GetState();
 	
 	m_shipPos = Vector3(m_ship._41, m_ship._42, m_ship._43);
-	//m_planetPos = 
-
-	if (kb.F1)
-		PostQuitMessage(0);
-
-	// showing/hiding menu
-	if (kb.Escape)
-		menuOn = true;
-
-	// New game/ continue button color change on hover
-	if (mouse.x > m_newGame.left && mouse.x < m_newGame.right && mouse.y > m_newGame.top && mouse.y < m_newGame.bottom)
-		newgamebtnHover = false;
-	else
-		newgamebtnHover = true;
-	/***********************/
-
-	// Exit button color change on hover
-	if (mouse.x > m_exit.left && mouse.x < m_exit.right && mouse.y > m_exit.top && mouse.y < m_exit.bottom && menuOn == true)
-		exitbtnHover = false;
-	else
-		exitbtnHover = true;
-	/***********************/
-
-	// specifying the clickable area where buttons are
-	if (mouse.leftButton)
-	{	
-		// When new game/continue button is clicked start game
-		if (mouse.x > m_newGame.left && mouse.x < m_newGame.right && mouse.y > m_newGame.top && mouse.y < m_newGame.bottom)
-		{
-			menuOn = false;
-			continuebtn = true;	
-		}
-
-		// when exit button is clicked - exit
-		if (mouse.x > m_exit.left && mouse.x < m_exit.right && mouse.y > m_exit.top && mouse.y < m_exit.bottom && menuOn == true)			
-			PostQuitMessage(0);
-	}
-	/***********************/
-
-	Menu(menuOn, continuebtn, newgamebtnHover, exitbtnHover);
+	
+	if (kb.F1) //TODO: Remove for release
+		PostQuitMessage(0); // QUIT
+	
+	// pointer to Menu pausing and texture loading .
+	Menuu->Update(m_keyboard.get(), m_mouse.get());
+	Menuu->Textures(m_d3dDevice.Get());
 
 	// Pausing game if menu is not hidden
-	if (!isPaused)
+	if (Menuu->get_isPaused())
 	{
+		// movement
 		if (kb.A)
 			m_ship = Matrix::CreateTranslation(-Vector3::Forward * speed) * Matrix::CreateRotationY(.05f) * m_ship;
 				
@@ -171,14 +134,12 @@ void Game::Update(DX::StepTimer const& timer)
 		if (kb.W)
 			m_ship = Matrix::CreateTranslation(-Vector3::Forward * speed) * Matrix::CreateRotationY(0.f) * m_ship;;
 			
-		if (kb.S)
-			m_ship *= Matrix::CreateTranslation(Vector3(0.0f, .0f, 0.2f));
-		
 		// shooting
 		if (kb.IsKeyDown(Keyboard::Keys::Space))
 		{
 			m_bullet = Matrix::CreateRotationY(0)* m_ship;
 		}
+		// basic collision detection and score addinig
 		for (int i = 0; i < MODELS_DRAWN; i++)
 		{
 			bool hit;
@@ -197,14 +158,13 @@ void Game::Update(DX::StepTimer const& timer)
 				hit = false;
 			}
 		}
+		// writes score to a txt file
 		std::ofstream scoreFile;
 		scoreFile.open("HighScore.txt");
 		scoreFile << score;
 		scoreFile.close();
-
-	
 		
-		
+		// TODO: Make UFO's randomly choose a planet and move towards it
 		m_enemy[2] += Matrix::CreateTranslation(Vector3::Lerp(Vector3::Zero,m_planetPos[1],6.f*1.1f));
 				
 		// star rotation around Y axis
@@ -212,16 +172,15 @@ void Game::Update(DX::StepTimer const& timer)
 		// planet orbiting
 		m_planetWorld[1] *= Matrix::CreateRotationY(sinf(2.f*XM_PI / 360.f)) * Matrix::CreateTranslation(Vector3(.1f, .0f, .1f));
 		
-		// makes the background "space" texture rotate slowly
+		// makes the "skybox" Geometry rotate slowly
 		m_skybox *= Matrix::CreateRotationY(.001f);
 		m_skybox *= Matrix::CreateRotationX(.001f);
 		m_skybox *= Matrix::CreateRotationZ(.001f);
-		
-		
-	//b = HighScore;	
 	}
 	// makes the camera look at the spaceship
 	m_view = Matrix::CreateLookAt(Vector3(m_shipPos.x + 0.f, m_shipPos.y + 50.f, m_shipPos.z + 50.f), Vector3(m_ship._41, m_ship._42, m_ship._43), Vector3::Up);
+
+	// updates audio, restarts if song finished
 	Sound->AudioUpdate();
 }
 // Draws the scene.
@@ -236,28 +195,24 @@ void Game::Render()
 
     // TODO: Add your rendering code here.
 	skybox->Draw(m_skybox);
-	
 	Planet->Draw(m_d3dContext.Get(), m_planetWorld[0], m_planetWorld[1], m_view, m_proj);
-
-	int i = 0;
-	for (i; i < MODELS_DRAWN; i++)
+	for (int i = 0; i < MODELS_DRAWN; i++)
 	{
 		AlienShip[i].Draw(m_d3dContext.Get(), m_enemy[i], m_view, m_proj);
 	}
-
 	Starship->Draw(m_d3dContext.Get(), m_ship, m_view, m_proj);
 	Bullet->Draw(m_bullet, m_view, m_proj);
+	// move bullet forward when spawned
 	m_bullet = Matrix::CreateTranslation(-Vector3::Forward) *m_bullet;
 			
-	// Draws text
-
+	// reads high score from a txt file
 	std::locale ulocale(std::locale(), new codecvt_utf8<wchar_t>);
 	std::wifstream ifs("HighScore.txt");
 	ifs.imbue(ulocale);
 	std::wstring ws;
 	std::getline(ifs, ws);
 
-
+	// Draws text on screen
 	std::wstring output = std::wstring(L" Score: ")+ std::to_wstring(score) +std::wstring(L"\n Hihh Score: ") + ws;
 	m_spriteBatch->Begin();
 	Vector2 origin = m_font->MeasureString(output.c_str()) / 4.f;
@@ -265,48 +220,11 @@ void Game::Render()
 	m_spriteBatch->End();
 	
 	//for drawing menu
-	if (menu)
+	if (Menuu->get_menuOn())
 	{
-		m_spriteBatch->Begin();
-		// background texture drawing
-		m_spriteBatch->Draw(m_background.Get(), m_menuBackground);
-		// new game/continue + color change
-		if (newgamebtnHover)
-		m_spriteBatch->Draw(m_btnNewGame.Get(), m_newGame);
-		else
-		m_spriteBatch->Draw(m_btnNewGame.Get(), m_newGame, Colors::Chartreuse);
-
-		// exit button + color change
-		if (exitbtnHover)
-		m_spriteBatch->Draw(m_btnExit.Get(), m_exit);
-		else
-		m_spriteBatch->Draw(m_btnExit.Get(), m_exit, Colors::Chartreuse);
-
-		m_spriteBatch->End();
+		Menuu->Draw(m_spriteBatch.get());
 	}
 	Present();
-}
-
-bool Game::Menu(bool menuAndPause, bool contbtn, bool newgamebtn, bool exitbtn)
-{
-	// for pausing udpate / showing menu
-	menu = menuAndPause;
-	isPaused = menuAndPause;
-	newgamebtnHover = newgamebtn;
-	exitbtnHover = exitbtn;
-		
-	// main menu textures for bg and buttons
-	continuebtn = contbtn;
-	if (continuebtn == true)
-	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"continue.jpg", nullptr, m_btnNewGame.ReleaseAndGetAddressOf()));
-	if (m_background.Get() == nullptr)
-	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"menubackground.jpg", nullptr, m_background.ReleaseAndGetAddressOf()));
-	if (m_btnNewGame == nullptr)
-	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"newGame.jpg", nullptr, m_btnNewGame.ReleaseAndGetAddressOf()));
-	if (m_btnExit == nullptr)
-	DX::ThrowIfFailed(CreateWICTextureFromFile(m_d3dDevice.Get(), L"exit.jpg", nullptr, m_btnExit.ReleaseAndGetAddressOf()));
-	
-	return menu;
 }
 
 // Helper method to clear the back buffers.
@@ -372,7 +290,6 @@ void Game::OnWindowSizeChanged(int width, int height)
     m_outputHeight = std::max(height, 1);
 
     CreateResources();
-
     // TODO: Game window is being resized.
 }
 
@@ -398,8 +315,8 @@ void Game::CreateDevice()
         // TODO: Modify for supported Direct3D feature levels (see code below related to 11.1 fallback handling).
         D3D_FEATURE_LEVEL_11_1,
         D3D_FEATURE_LEVEL_11_0,
-        D3D_FEATURE_LEVEL_10_1,
-        D3D_FEATURE_LEVEL_10_0,
+		D3D_FEATURE_LEVEL_10_1,
+		D3D_FEATURE_LEVEL_10_0
     };
 
     // Create the DX11 API device object, and get a corresponding context.
@@ -464,31 +381,30 @@ void Game::CreateDevice()
         (void)m_d3dContext.As(&m_d3dContext1);
 
     // TODO: Initialize device dependent objects here (independent of window 
-	
-	Bullet->CreateDevice(m_d3dContext.Get());
-	
-	
+
 	m_planetWorld[0] = Matrix::Identity;
 	m_planetWorld[1] = Matrix::Identity;
 	m_skybox = Matrix::Identity;
 	m_ship = Matrix::Identity;
 	
-
+	// Scale of matrices/models/geometry (same thing)
 	m_ship = Matrix::CreateScale(Vector3(1.2f, 1.2f, 1.2f));
 	m_planetWorld[0] = Matrix::CreateScale(Vector3(15.f, 15.f, 15.f));
 	m_planetWorld[1] = Matrix::CreateScale(Vector3(4.f, 4.f, 4.f));
 	m_skybox = Matrix::CreateScale(Vector3(5.f, 5.f, 5.f));
 	
+	// font sprite into m_font
 	m_font = std::make_unique<SpriteFont>(m_d3dDevice.Get(), L"c.spritefont");
 	m_spriteBatch = std::make_unique<SpriteBatch>(m_d3dContext.Get());
 
-	// Creating models/texturing
+	// Creating models using DirectX::Model, and other geometry with DirectX::GeometricPrimitive, also textures
 	for (int i = 0; i < MODELS_DRAWN; i++){
-		AlienShip[i].CreateDevice(m_d3dDevice.Get());
+		AlienShip[i].CreateDevice(m_d3dDevice.Get()); // Loads a 3D model into each position in the array, UFO
 	}
 	Starship->CreateDevice(m_d3dDevice.Get());
 	Planet->CreateDevice(m_d3dDevice.Get(), m_d3dContext.Get());
 	skybox->CreateDevice(m_d3dDevice.Get(), m_d3dContext.Get());
+	Bullet->CreateDevice(m_d3dContext.Get());
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.
@@ -608,30 +524,15 @@ void Game::CreateResources()
     DX::ThrowIfFailed(m_d3dDevice->CreateDepthStencilView(depthStencil.Get(), &depthStencilViewDesc, m_depthStencilView.ReleaseAndGetAddressOf()));
 
     // TODO: Initialize windows-size dependent objects here.
-	
-	// FOV
+	// projection matrix, FOV
 	m_proj = Matrix::CreatePerspectiveFieldOfView(XM_PI / 2.5f, float(backBufferWidth) / float(backBufferHeight),0.1f,1000.f);
-	skybox->CreateResources(m_view, m_proj);
 
 	//font position
 	m_FontPos.x = backBufferWidth / 5.f;
 	m_FontPos.y = backBufferHeight / 6.f;
 
-	// menu background position
-	m_menuBackground.left = 0;
-	m_menuBackground.top = 0;
-	m_menuBackground.right = backBufferWidth;
-	m_menuBackground.bottom = backBufferHeight;
-	// New Game button position
-	m_newGame.left = long(backBufferWidth / 2.5f);
-	m_newGame.top = long(backBufferHeight / 4.1f);
-	m_newGame.right = long(backBufferWidth / 1.7f);
-	m_newGame.bottom = long(backBufferHeight / 2.8f);
-	// Exit button position
-	m_exit.left = long(backBufferWidth / 2.5f);
-	m_exit.top = long(backBufferHeight / 2.75f);
-	m_exit.right = long(backBufferWidth / 1.7f);
-	m_exit.bottom = long(backBufferHeight / 2.095f);
+	skybox->CreateResources(m_view, m_proj); // sets the view and projection matrix for effects (lightfix)
+	Menuu->CreateResources(float(backBufferWidth), float(backBufferHeight)); // menu item positions
 }
 
 void Game::OnDeviceLost()
@@ -645,16 +546,9 @@ void Game::OnDeviceLost()
     m_d3dContext.Reset();
     m_d3dDevice1.Reset();
     m_d3dDevice.Reset();
-	
-
-	
-	m_background.Reset();
-	
-	
+		
 	m_font.reset();
-
-	
+		
 	CreateDevice();
-
     CreateResources();
 }

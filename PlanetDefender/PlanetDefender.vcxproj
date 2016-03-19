@@ -165,10 +165,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Audio.h" />
+    <ClInclude Include="AudioClass.h" />
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="Font.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="MainMenu.h" />
     <ClInclude Include="Models.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Planets.h" />
@@ -178,11 +179,12 @@
     <ClInclude Include="StepTimer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Audio.cpp" />
+    <ClCompile Include="AudioClass.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="Font.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="MainMenu.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -212,6 +214,7 @@
     <Image Include="sunTex.jpg" />
   </ItemGroup>
   <ItemGroup>
+    <Media Include="Explosion.wav" />
     <Media Include="sandstorm.wav" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

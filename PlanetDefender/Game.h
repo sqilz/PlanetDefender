@@ -32,13 +32,10 @@ public:
     void OnSuspending();
     void OnResuming();
     void OnWindowSizeChanged(int width, int height);
-	void OnNewAudioDevice() { m_retryAudio = true; }
+	
     // Properties
     void GetDefaultSize( int& width, int& height ) const;
 
-	//Main Menu
-	bool Menu(bool pause, bool buttonTextureChanger, bool newbtnhover, bool exitbtnhover);
-	bool Shoot(bool shoot,bool shoot2);
 protected:
 
    void Update(DX::StepTimer const& timer);
@@ -68,51 +65,31 @@ protected:
     // Rendering loop timer.
     DX::StepTimer                                   m_timer;
 	
-	//pointer to keyboard/mouse interface
+	// pointer to keyboard/mouse interface
 	std::unique_ptr<DirectX::Keyboard> m_keyboard;
 	std::unique_ptr<DirectX::Mouse> m_mouse;
 
-	DirectX::SimpleMath::Matrix m_planetWorld[2];
+	DirectX::SimpleMath::Matrix m_view; // view matrix
+	DirectX::SimpleMath::Matrix m_proj; // projection matrix
+	DirectX::SimpleMath::Matrix m_planetWorld[9];
 	DirectX::SimpleMath::Matrix m_ship;
 	DirectX::SimpleMath::Matrix m_bullet;
 	DirectX::SimpleMath::Matrix m_skybox;
-	DirectX::SimpleMath::Matrix m_view;
-	DirectX::SimpleMath::Matrix m_proj;
 	DirectX::SimpleMath::Matrix m_enemy[200];
 
 	DirectX::SimpleMath::Vector3 m_planetPos[9];
 
-	//font
+	// font
 	DirectX::SimpleMath::Vector2 m_FontPos;
 	std::unique_ptr<DirectX::SpriteFont> m_font;
 	std::unique_ptr<DirectX::SpriteBatch> m_spriteBatch;
 	
-	bool shoot1,shoot2;
-	bool draw;
 	DirectX::SimpleMath::Vector3 m_shipPos, m_bulletPos;
-	
-	
+		
 	int score;
-	char HighScore[2];
 	float speed, acceleration;
-	// Menu
-	RECT m_menuBackground, m_newGame, m_exit;
-
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_background;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_btnNewGame;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_btnExit;
-	// Pausing game 
-	bool isPaused,menu;
-	bool menuOn;
-	bool continuebtn;
-	bool newgamebtnHover, exitbtnHover;
 	
-	std::unique_ptr<DirectX::AudioEngine> m_audio;
-	bool m_retryAudio;
-	float explodeDelay;
-	std::unique_ptr<DirectX::SoundEffect> m_bgAudio;
-	std::unique_ptr<DirectX::SoundEffectInstance> m_bgAudioLoop;
-
+	// for random UFO positioning
 	std::unique_ptr<std::mt19937> m_random;
 	float enemyPosX,enemyPosZ;
 	std::vector<float> positionRand = std::vector<float>(100);

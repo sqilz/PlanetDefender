@@ -5,12 +5,13 @@
 #include "pch.h"
 #include "Game.h"
 #include <Dbt.h>
-#include "Audio.h"
+#include "AudioClass.h"
 using namespace DirectX;
 
 namespace
 {
     auto g_game = std::make_unique<Game>();
+	auto audio = std::make_unique<AudioClass>();
 };
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -239,8 +240,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 						const PDEV_BROADCAST_DEVICEINTERFACE>(pDev);
 					if (pInter->dbcc_classguid == KSCATEGORY_AUDIO)
 					{
-						if (g_game)
-							g_game->OnNewAudioDevice();
+						if (audio)
+							audio->OnNewAudioDevice();
 					}
 				}
 			}

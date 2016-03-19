@@ -1,6 +1,8 @@
 //
 // Models.h
 //
+// Class Created for other classes that use models or geometry to inherit from
+//
 #pragma once
 using namespace DirectX;
 using namespace DirectX::SimpleMath;

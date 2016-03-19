@@ -44,6 +44,7 @@ void Skybox::CreateDevice(ID3D11Device * device, ID3D11DeviceContext* deviceCont
 
 void Skybox::CreateResources(Matrix view, Matrix proj)
 {
+	// sets the view and projection matrix for effects
 	m_effect->SetView(view);
 	m_effect->SetProjection(proj);
 }

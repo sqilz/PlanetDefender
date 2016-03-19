@@ -44,7 +44,10 @@
     <ClInclude Include="Shooting.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Audio.h">
+    <ClInclude Include="MainMenu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioClass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -79,7 +82,10 @@
     <ClCompile Include="Shooting.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Audio.cpp">
+    <ClCompile Include="MainMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AudioClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -123,6 +129,9 @@
   </ItemGroup>
   <ItemGroup>
     <Media Include="sandstorm.wav">
+      <Filter>Resources</Filter>
+    </Media>
+    <Media Include="Explosion.wav">
       <Filter>Resources</Filter>
     </Media>
   </ItemGroup>
