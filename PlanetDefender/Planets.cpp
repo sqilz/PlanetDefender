@@ -4,6 +4,12 @@
 
 Planets::Planets()
 {
+	m_planetWorld[0] = Matrix::Identity;
+	m_planetWorld[1] = Matrix::Identity;
+	m_planetWorld[1]._41 = -20.f;	// X Put this in initialize in Game.cpp
+	m_planetWorld[1]._43 = -20.f;	// Y
+	m_planetWorld[0] = Matrix::CreateScale(Vector3(15.f, 15.f, 15.f));
+	m_planetWorld[1] = Matrix::CreateScale(Vector3(4.f, 4.f, 4.f));
 }
 
 
@@ -15,10 +21,18 @@ Planets::~Planets()
 	m_orbPlanet.reset();
 	OutputDebugStringW(L"Destructor in Planets");
 }
-void Planets::Draw(ID3D11DeviceContext* deviceContext, Matrix world, Matrix world2, Matrix view, Matrix proj)
+void Planets::PlanetMovements()
 {
-	m_star->Draw(world, view, proj, Colors::White, m_starTex.Get());
-	m_orbPlanet->Draw(world2, view, proj, Colors::White, m_planetTex.Get());
+	// star rotation around Y axis
+	m_planetWorld[0] *= Matrix::CreateRotationY(.001f);
+	// planet orbiting
+	m_planetWorld[1] *= Matrix::CreateRotationY(sinf(0.5f*XM_PI / 360.f)) * Matrix::CreateTranslation(Vector3(.1f, .0f, .1f));
+
+}
+void Planets::Draw(ID3D11DeviceContext* deviceContext, Matrix view, Matrix proj)
+{
+	m_star->Draw(m_planetWorld[0], view, proj, Colors::White, m_starTex.Get());
+	m_orbPlanet->Draw(m_planetWorld[1], view, proj, Colors::White, m_planetTex.Get());
 }
 void Planets::CreateDevice(ID3D11Device * device, ID3D11DeviceContext* deviceContext)
 {

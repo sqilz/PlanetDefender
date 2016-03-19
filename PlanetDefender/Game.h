@@ -71,7 +71,7 @@ protected:
 
 	DirectX::SimpleMath::Matrix m_view; // view matrix
 	DirectX::SimpleMath::Matrix m_proj; // projection matrix
-	DirectX::SimpleMath::Matrix m_planetWorld[9];
+	//DirectX::SimpleMath::Matrix m_planetWorld[9];
 	DirectX::SimpleMath::Matrix m_ship;
 	DirectX::SimpleMath::Matrix m_bullet;
 	DirectX::SimpleMath::Matrix m_skybox;

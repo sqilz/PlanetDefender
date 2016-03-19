@@ -64,8 +64,7 @@ void Game::Initialize(HWND window, int width, int height)
 	m_mouse = std::make_unique<Mouse>();
 	m_mouse->SetWindow(window);
 
-	m_planetWorld[1]._41 = -20.f;	// X 
-	m_planetWorld[1]._43 = -20.f;	// Y
+	
 	m_ship._43 = 30.f; // spawn position on Z changed so ship doesnt spawn inside a planet
 
 	speed = 0.6f;
@@ -100,7 +99,7 @@ void Game::Tick()
 // Updates the world.
 void Game::Update(DX::StepTimer const& timer)
 {
-	m_planetPos[1] = Vector3(m_planetWorld[1]._41, 0.f, m_planetWorld[1]._43); // Vector updating the position of orbiting planet
+	
     float elapsedTime = float(timer.GetElapsedSeconds());
 
     // TODO: Add your game logic here.
@@ -165,12 +164,10 @@ void Game::Update(DX::StepTimer const& timer)
 		scoreFile.close();
 		
 		// TODO: Make UFO's randomly choose a planet and move towards it
-		m_enemy[2] += Matrix::CreateTranslation(Vector3::Lerp(Vector3::Zero,m_planetPos[1],6.f*1.1f));
+	//	m_enemy[2] += Matrix::CreateTranslation(Vector3::Lerp(Vector3::Zero,m_planetPos[1],6.f*1.1f));
 				
-		// star rotation around Y axis
-		m_planetWorld[0] *= Matrix::CreateRotationY(.001f);
-		// planet orbiting
-		m_planetWorld[1] *= Matrix::CreateRotationY(sinf(2.f*XM_PI / 360.f)) * Matrix::CreateTranslation(Vector3(.1f, .0f, .1f));
+		Planet->PlanetMovements();
+	
 		
 		// makes the "skybox" Geometry rotate slowly
 		m_skybox *= Matrix::CreateRotationY(.001f);
@@ -195,7 +192,7 @@ void Game::Render()
 
     // TODO: Add your rendering code here.
 	skybox->Draw(m_skybox);
-	Planet->Draw(m_d3dContext.Get(), m_planetWorld[0], m_planetWorld[1], m_view, m_proj);
+	Planet->Draw(m_d3dContext.Get(), m_view, m_proj);
 	for (int i = 0; i < MODELS_DRAWN; i++)
 	{
 		AlienShip[i].Draw(m_d3dContext.Get(), m_enemy[i], m_view, m_proj);
@@ -382,15 +379,12 @@ void Game::CreateDevice()
 
     // TODO: Initialize device dependent objects here (independent of window 
 
-	m_planetWorld[0] = Matrix::Identity;
-	m_planetWorld[1] = Matrix::Identity;
 	m_skybox = Matrix::Identity;
 	m_ship = Matrix::Identity;
 	
 	// Scale of matrices/models/geometry (same thing)
 	m_ship = Matrix::CreateScale(Vector3(1.2f, 1.2f, 1.2f));
-	m_planetWorld[0] = Matrix::CreateScale(Vector3(15.f, 15.f, 15.f));
-	m_planetWorld[1] = Matrix::CreateScale(Vector3(4.f, 4.f, 4.f));
+	
 	m_skybox = Matrix::CreateScale(Vector3(5.f, 5.f, 5.f));
 	
 	// font sprite into m_font
