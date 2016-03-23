@@ -71,13 +71,13 @@ protected:
 
 	DirectX::SimpleMath::Matrix m_view; // view matrix
 	DirectX::SimpleMath::Matrix m_proj; // projection matrix
-	//DirectX::SimpleMath::Matrix m_planetWorld[9];
+	
 	DirectX::SimpleMath::Matrix m_ship;
 	DirectX::SimpleMath::Matrix m_bullet;
 	DirectX::SimpleMath::Matrix m_skybox;
-	DirectX::SimpleMath::Matrix m_enemy[200];
 
-	DirectX::SimpleMath::Vector3 m_planetPos[9];
+	DirectX::SimpleMath::Vector3 planetPos;
+	//DirectX::SimpleMath::Vector3 m_planetPos[9];
 
 	// font
 	DirectX::SimpleMath::Vector2 m_FontPos;

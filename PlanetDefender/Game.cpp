@@ -16,7 +16,7 @@
 using namespace std;
 
 //TODO: just create a variable
-#define MODELS_DRAWN 20 // I should not use this 
+#define MODELS_DRAWN 6 // I should not use this  
 
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
@@ -78,8 +78,8 @@ void Game::Initialize(HWND window, int width, int height)
 		std::uniform_real_distribution<float> dist(-80.f, 80.f);
 		enemyPosX = dist(*m_random);
 		enemyPosZ= dist(*m_random);
-		m_enemy[i]._41 = enemyPosX;
-		m_enemy[i]._43 = enemyPosZ;
+		AlienShip[i].SetMatrixX(enemyPosX);
+		AlienShip[i].SetMatrixZ(enemyPosZ);
 	}	
 	score = 0;
 	
@@ -112,7 +112,10 @@ void Game::Update(DX::StepTimer const& timer)
 	auto mouse = m_mouse->GetState();
 	
 	m_shipPos = Vector3(m_ship._41, m_ship._42, m_ship._43);
-	
+	for (int i = 1; i <= MODELS_DRAWN; i++)
+	{
+		planetPos = Vector3(Planet->GetPlanetsMatrix(i)._41, 0.f, Planet->GetPlanetsMatrix(i)._43);
+	}
 	if (kb.F1) //TODO: Remove for release
 		PostQuitMessage(0); // QUIT
 	
@@ -142,8 +145,8 @@ void Game::Update(DX::StepTimer const& timer)
 		for (int i = 0; i < MODELS_DRAWN; i++)
 		{
 			bool hit;
-			float xDiff = (m_enemy[i]._41 - m_bullet._41);
-			float zDiff = (m_enemy[i]._43 - m_bullet._43);
+			float xDiff = (AlienShip[i].GetWorldMatrix()._41 - m_bullet._41);
+			float zDiff = (AlienShip[i].GetWorldMatrix()._43 - m_bullet._43);
 			float xDiffSqr = (xDiff * xDiff);
 			float zDiffSqr = (zDiff * zDiff);
 			float total = (xDiffSqr + zDiffSqr);
@@ -164,11 +167,14 @@ void Game::Update(DX::StepTimer const& timer)
 		scoreFile.close();
 		
 		// TODO: Make UFO's randomly choose a planet and move towards it
-	//	m_enemy[2] += Matrix::CreateTranslation(Vector3::Lerp(Vector3::Zero,m_planetPos[1],6.f*1.1f));
-				
-		Planet->PlanetMovements();
-	
+		for (int i = 0; i < MODELS_DRAWN; i++)
+		{
+			//TODO FIX Aliens Ships moving towards planet
+			//AlienShip[i].SetWorldMatrix(AlienShip[i].GetWorldMatrix() + Matrix::CreateTranslation(Vector3::Lerp(Vector3::Zero, planetPos, time*i/10)));
 		
+	
+		}
+		Planet->PlanetMovements();
 		// makes the "skybox" Geometry rotate slowly
 		m_skybox *= Matrix::CreateRotationY(.001f);
 		m_skybox *= Matrix::CreateRotationX(.001f);
@@ -176,7 +182,7 @@ void Game::Update(DX::StepTimer const& timer)
 	}
 	// makes the camera look at the spaceship
 	m_view = Matrix::CreateLookAt(Vector3(m_shipPos.x + 0.f, m_shipPos.y + 50.f, m_shipPos.z + 50.f), Vector3(m_ship._41, m_ship._42, m_ship._43), Vector3::Up);
-
+	
 	// updates audio, restarts if song finished
 	Sound->AudioUpdate();
 }
@@ -195,7 +201,7 @@ void Game::Render()
 	Planet->Draw(m_d3dContext.Get(), m_view, m_proj);
 	for (int i = 0; i < MODELS_DRAWN; i++)
 	{
-		AlienShip[i].Draw(m_d3dContext.Get(), m_enemy[i], m_view, m_proj);
+		AlienShip[i].Draw(m_d3dContext.Get(), AlienShip[i].GetWorldMatrix(), m_view, m_proj);
 	}
 	Starship->Draw(m_d3dContext.Get(), m_ship, m_view, m_proj);
 	Bullet->Draw(m_bullet, m_view, m_proj);
@@ -210,7 +216,7 @@ void Game::Render()
 	std::getline(ifs, ws);
 
 	// Draws text on screen
-	std::wstring output = std::wstring(L" Score: ")+ std::to_wstring(score) +std::wstring(L"\n Hihh Score: ") + ws;
+	std::wstring output = std::wstring(L" Score: ")+ std::to_wstring(score) +std::wstring(L"\n High Score: ") + ws;
 	m_spriteBatch->Begin();
 	Vector2 origin = m_font->MeasureString(output.c_str()) / 4.f;
 	m_font->DrawString(m_spriteBatch.get(), output.c_str(),	m_FontPos, Colors::White, 0.f, origin);

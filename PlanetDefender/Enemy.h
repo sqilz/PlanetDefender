@@ -15,8 +15,15 @@ public:
 	 void Draw(ID3D11DeviceContext* deviceContext, Matrix world, Matrix view, Matrix proj);
 	 bool ChangeColor(bool test);
 	 void CreateDevice(ID3D11Device * device);
+
+	 void SetWorldMatrix(Matrix world);
+	 Matrix GetWorldMatrix();
+
+	 void SetMatrixX(float x);
+	 void SetMatrixZ(float z);
 private:
 
+	DirectX::SimpleMath::Matrix m_enemy;
 	std::unique_ptr<DirectX::Model> alien;
 	bool test;
 	

@@ -28,3 +28,21 @@ void Enemy::CreateDevice(ID3D11Device * device)
 
 	alien = Model::CreateFromCMO(device, L"ufo.cmo", *m_fxFactory);
 }
+
+void Enemy::SetWorldMatrix(Matrix m)
+{
+	m_enemy = m;
+}
+
+Matrix Enemy::GetWorldMatrix()
+{
+	return m_enemy;
+}
+void Enemy::SetMatrixX(float x)
+{
+	m_enemy._41 = x;
+}
+void Enemy::SetMatrixZ(float z)
+{
+	m_enemy._43 = z;
+}
